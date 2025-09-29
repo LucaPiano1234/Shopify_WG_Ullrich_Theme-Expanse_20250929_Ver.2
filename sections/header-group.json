@@ -65,9 +65,12 @@
       "block_order": [
         "0e8356f3-3746-446e-88c7-6e95a9745d66"
       ],
+      "custom_css": [
+        ".site-nav__dropdown {padding-top: 0px; margin-top: 60px;}"
+      ],
       "settings": {
         "main_menu_link_list": "main-menu",
-        "hover_menu": false,
+        "hover_menu": true,
         "main_menu_alignment": "left",
         "mega_products": false,
         "header_sticky": true,
