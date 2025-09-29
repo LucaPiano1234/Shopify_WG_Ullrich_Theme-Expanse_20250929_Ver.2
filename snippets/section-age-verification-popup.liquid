@@ -1,22 +1,39 @@
-{% comment %}
-  /**
-    * @param {object} section - section object
-    * @param {object} image - image object
-    * @param {string} color_scheme - color scheme
-    * @param {boolean} enable_test_mode - enable test mode
-    * @param {boolean} blur_image - blur image
-    * @param {string} heading - heading
-    * @param {string} text - text
-    * @param {string} decline_button_label - decline button label
-    * @param {string} approve_button_label - approve button label
-    * @param {string} decline_heading - decline heading
-    * @param {string} decline_text - decline text
-    * @param {string} return_button_label - return button label
-    * @param {string} [hydration] - hydration mode - (default: 'on:idle')
-  */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders a section with an age verification popup.
 
-{%- assign hydration = hydration | default: 'on:idle' -%}
+  Accepts:
+  - enable_test_mode {boolean} - Whether to enable test mode
+  - color_scheme {string} - The color scheme to use
+  - image {object} - The image object
+  - blur_image {boolean} - Whether to blur the image
+  - heading {string} - The heading text
+  - text {string} - The subheading text
+  - decline_button_label {string} - The decline button label
+  - approve_button_label {string} - The approve button label
+  - decline_heading {string} - The decline heading text
+  - decline_text {string} - The decline subheading text
+  - return_button_label {string} - The return button label
+  - hydration {string} - The hydration strategy to use
+
+  Usage:
+  {% render 'section-age-verification-popup', enable_test_mode: true, heading: 'Are you 18 or older?' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign enable_test_mode = enable_test_mode | default: section.settings.enable_test_mode, allow_false: true | default: false, allow_false: true
+  assign color_scheme = color_scheme | default: section.settings.color_scheme | default: 'none'
+  assign image = image | default: section.settings.image
+  assign blur_image = blur_image | default: section.settings.blur_image, allow_false: true | default: false, allow_false: true
+  assign heading = heading | default: section.settings.heading
+  assign text = text | default: section.settings.text
+  assign decline_button_label = decline_button_label | default: section.settings.decline_button_label
+  assign approve_button_label = approve_button_label | default: section.settings.approve_button_label
+  assign decline_heading = decline_heading | default: section.settings.decline_heading
+  assign decline_text = decline_text | default: section.settings.decline_text
+  assign return_button_label = return_button_label | default: section.settings.return_button_label
+  assign hydration = hydration | default: 'on:idle'
+-%}
 
 <is-land {{ hydration }}>
   <age-verification-popup
@@ -31,7 +48,7 @@
       {% endif %}
     "
     data-test-mode="{{ enable_test_mode }}"
-    data-section-id="{{ section.id }}"
+    section-id="{{ section.id }}"
   >
     {%- if color_scheme != 'none' and image == blank -%}
       {%- render 'color-scheme-texture', color_scheme: color_scheme -%}
@@ -40,11 +57,7 @@
     {% if image != blank %}
       <div class="age-verification-popup__background-image-wrapper" data-background-image>
         {% comment %} Full width image so don't need to adjust sizes attribute, fallback is 100vw {% endcomment %}
-        {%- render 'image-element',
-          img: image,
-          img_width: 2400,
-          classes: 'age-verification-popup__background-image',
-        -%}
+        {%- render 'image-element', img: image, img_width: 2400, classes: 'age-verification-popup__background-image' -%}
       </div>
       {% style %}
         .age-verification-popup__background-image {
@@ -65,7 +78,7 @@
               color-scheme-{{ color_scheme }}
             {% endif %}
           "
-          >
+        >
           {%- if color_scheme != 'none' and image != blank -%}
             {%- render 'color-scheme-texture', color_scheme: color_scheme -%}
           {%- endif -%}
@@ -75,34 +88,32 @@
               data-age-verification-popup-content
             >
               {% if heading != blank %}
-                <h2>{{ heading }}</h2>
+                <h2>{{ heading | escape }}</h2>
               {% endif %}
               {% if text != blank %}
-                <div class="rte">
+                <div class="rte clearfix">
                   <div class="enlarge-text">{{ text }}</div>
                 </div>
               {% endif %}
               {% if decline_button_label != blank and approve_button_label != blank %}
                 <div class="age-verification-popup__btns-wrapper">
               {% endif %}
-                {% if decline_button_label != blank %}
-                  <button
-                    class="
-                      btn color-scheme-reversed
-                    "
-                    data-age-verification-popup-decline-button
-                  >
-                    {{ decline_button_label }}
-                  </button>
-                {% endif %}
-                {% if approve_button_label != blank %}
-                  <button
-                    class="btn"
-                    data-age-verification-popup-exit-button
-                  >
-                    {{ approve_button_label }}
-                  </button>
-                {% endif %}
+              {% if decline_button_label != blank %}
+                <button
+                  class="                      btn color-scheme-reversed"
+                  data-age-verification-popup-decline-button
+                >
+                  {{ decline_button_label }}
+                </button>
+              {% endif %}
+              {% if approve_button_label != blank %}
+                <button
+                  class="btn"
+                  data-age-verification-popup-exit-button
+                >
+                  {{ approve_button_label }}
+                </button>
+              {% endif %}
               {% if decline_button_label != blank and approve_button_label != blank %}
                 </div>
               {% endif %}
@@ -115,7 +126,7 @@
                 <h2>{{ decline_heading }}</h2>
               {% endif %}
               {% if decline_text != blank %}
-                <div class="rte">
+                <div class="rte clearfix">
                   <div class="enlarge-text">{{ decline_text }}</div>
                 </div>
               {% endif %}
@@ -136,7 +147,7 @@
 
   <template data-island>
     <script type="module">
-      import 'components/section-age-verification-popup';
+      import 'components/section-age-verification-popup'
     </script>
   </template>
 </is-land>

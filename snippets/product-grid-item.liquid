@@ -1,33 +1,69 @@
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
 {% comment %}
-  /**
-   * @param {object} product - product object
-   * @param {string} [classes] - additional classes to add to the grid item
-   * @param {boolean} [no_actions] - whether to show the quick add and quick shop buttons
-   * @param {boolean} quick_add_enable - whether quick add is enabled
-   * @param {boolean} quick_shop_enable - whether quick shop is enabled
-   * @param {string} [type] - whether the grid item is horizontal or not
-   * @param {string} product_grid_image_size - the image size to use for the grid item
-   * @param {string} [image_style] - whether the image is square or circle
-   * @param {object} collection - the collection object
-   * @param {boolean} product_grid_image_fill - whether the image should fill the grid item
-   * @param {string} [sizes] - image sizes
-   * @param {string} [sizeVariable] - image size variable used in image size calculations
-   * @param {string} [fallback] - fallback used in image size calculations when first condition is not met
-   * @param {boolean} product_hover_image - whether second image will be shown on hover
-   * @param {boolean} enable_swatches - whether swatches are enabled
-   * @param {boolean} vendor_enable - whether to show the vendor
-   * @param {boolean} product_save_amount - show save amount
-   * @param {string} product_save_type - dollar or percent
-   * @param {boolean} enable_product_reviews - whether to show product reviews
-   * @param {string} [hydration] - hydration mode - (default: 'on:idle')
-   */
+  Renders a product grid item
+
+  Accepts:
+  - collection {collection} - The collection object
+  - classes {string} - Additional CSS classes to add to the grid item
+  - no_actions {boolean} - Whether to show the quick add and quick shop buttons
+  - type {string} - Whether the grid item is horizontal or not
+  - sizes {string} - Image sizes
+  - sizeVariable {string} - Image size variable used in image size calculations
+  - fallback {string} - Fallback used in image size calculations when first condition is not met
+  - image_style {string} - Whether the image is square or circle
+  - quick_add_enable {boolean} - Whether quick add is enabled
+  - quick_shop_enable {boolean} - Whether quick shop is enabled
+  - product_grid_image_size {string} - The image size to use for the grid item
+  - product_grid_image_fill {boolean} - Whether the image should fill the grid item
+  - product_hover_image {boolean} - Whether second image will be shown on hover
+  - enable_swatches {boolean} - Whether swatches are enabled
+  - vendor_enable {boolean} - Whether to show the vendor
+  - product_save_amount {boolean} - Show save amount
+  - product_save_type {string} - Dollar or percent
+  - set_image_breathing_room {boolean} - Whether to set image breathing room
+  - enable_product_tags {boolean} - Whether to show tags
+  - enable_add_to_cart {boolean} - Whether to show the add to cart component
+
+  Usage:
+  {% render 'product-grid-item', product: product %}
 {% endcomment %}
 
 {%- liquid
-  assign hydration = hydration | default: 'on:idle'
+  assign sizes = sizes | default: '30vw'
+  assign quick_add_enable = quick_add_enable | default: settings.quick_add_enable, allow_false: true | default: true, allow_false: true
+  assign quick_shop_enable = quick_shop_enable | default: settings.quick_shop_enable, allow_false: true | default: true, allow_false: true
+  assign product_grid_image_size = product_grid_image_size | default: settings.product_grid_image_size | default: 'square'
+  assign product_grid_image_fill = product_grid_image_fill | default: settings.product_grid_image_fill, allow_false: true | default: true, allow_false: true
+  assign product_hover_image = product_hover_image | default: settings.product_hover_image, allow_false: true | default: false, allow_false: true
+  assign enable_swatches = enable_swatches | default: settings.enable_swatches, allow_false: true | default: true, allow_false: true
+  assign vendor_enable = vendor_enable | default: settings.vendor_enable, allow_false: true | default: true, allow_false: true
+  assign product_save_amount = product_save_amount | default: settings.product_save_amount, allow_false: true | default: true, allow_false: true
+  assign product_save_type = product_save_type | default: settings.product_save_type | default: 'dollar'
+  assign enable_product_tags = enable_product_tags | default: settings.enable_product_tags, allow_false: true | default: false, allow_false: true
+  assign prefix_enable = prefix_enable | default: settings.prefix_enable, allow_false: true | default: false, allow_false: true
+  assign no_actions = no_actions | default: false, allow_false: true
+  assign enable_add_to_cart = enable_add_to_cart | default: settings.enable_add_to_cart, allow_false: true
+  assign image_style = image_style | default: 'square'
+  assign product_tile_layout = product_tile_layout | default: false, allow_false: true
+  assign product_grid_style = product_grid_style | default: settings.product_grid_style | default: 'grey-round'
+  assign set_image_breathing_room = set_image_breathing_room | default: settings.set_image_breathing_room, allow_false: true | default: true, allow_false: true
+  assign type = type | default: blank
+
   assign on_sale = false
   if product.compare_at_price > product.price
     assign on_sale = true
+  endif
+
+  if set_image_breathing_room
+    if settings.product_grid_image_margin == 0
+      assign image_breathing_room = false
+    else
+      assign image_breathing_room = true
+    endif
+  endif
+
+  if enable_add_to_cart
+    assign no_actions = true
   endif
 
   assign product_tags = product.tags | join: ','
@@ -50,27 +86,41 @@
   endif
 -%}
 
-<is-land class="grid-item" {{ hydration }}>
-  <product-grid-item class="product-grid-item grid-product {{ classes }}" data-product-handle="{{ product.handle }}" data-product-id="{{ product.id }}" data-product-grid-item>
+<div
+  class="
+    grid-item grid-product {{ classes }} grid-product-image-breathing-room--{{ image_breathing_room }}
+    {% if product_tile_layout %}product-tile-layout--{{ product_tile_layout }}{% endif %}
+    {% if product_grid_style contains 'gridlines' %}
+      grid-product--gridlines overlay
+    {% endif %}
+  "
+>
+  <div
+    class="product-grid-item"
+    data-product-handle="{{ product.handle }}"
+    data-product-id="{{ product.id }}"
+    data-product-grid-item
+  >
     <div class="grid-item__content">
-
       {%- unless no_actions -%}
         {%- if quick_add_enable or quick_shop_enable -%}
           <div class="grid-product__actions">
             {%- if quick_shop_enable and type != 'horizontal' -%}
               {%- capture quickShopButton -%}
-                <button type="button" class="btn btn--circle btn--icon quick-product__btn js-modal-open-quick-modal-{{ product.id }} small--hide" title="{{ 'products.general.quick_shop' | t }}" data-handle="{{ product.handle }}">
-                  {% render 'icon-search' %}
-                  <span class="icon__fallback-text">{{ 'products.general.quick_shop' | t }}</span>
+                <button type="button" class="btn btn--circle btn--icon quick-product__btn js-modal-open-quick-modal-{{ product.id }} small--hide" title="
+                  {% render 't_with_fallback', key: 'labels.quick_shop', fallback: 'Quick shop' -%}
+                  " data-handle="{{ product.handle }}">
+                  {% render 'icon', name: 'search' %}
+                  <span class="icon__fallback-text visually-hidden">
+                    {% render 't_with_fallback', key: 'labels.quick_shop', fallback: 'Quick shop' %}
+                  </span>
                 </button>
               {%- endcapture -%}
+
               {%- capture content -%}
-                {% render 'tool-tip-trigger',
-                  button: quickShopButton,
-                  context: 'QuickShop',
-                  tool-tip-classes: 'quick-shop-modal',
-                %}
+                {%- render 'tool-tip-trigger', context: 'QuickShop', button: quickShopButton, wrapper_class: 'quick-shop-modal' -%}
               {%- endcapture -%}
+
               {%- render 'quick-shop', content: content -%}
             {%- endif -%}
             {%- if quick_add_enable and product.available -%}
@@ -81,32 +131,42 @@
               {% endcomment %}
               {%- if product.variants.size > 1 -%}
                 {%- capture quickAddButton %}
-                  <button type="button" class="text-link quick-add-btn js-quick-add-form js-modal-open-quick-add" title="{{ 'products.product.add_to_cart' | t }}">
+                  <button type="button" class="text-link quick-add-btn js-quick-add-form js-modal-open-quick-add" title="
+                    {% render 't_with_fallback', key: 'actions.add_to_cart', fallback: 'Add to cart' -%}
+                    ">
                     <span class="btn btn--circle btn--icon">
-                      {% render 'icon-plus' %}
-                      <span class="icon__fallback-text">{{ 'products.product.add_to_cart' | t }}</span>
+                      {% render 'icon', name: 'plus' %}
+                      <span class="icon__fallback-text visually-hidden">
+                        {% render 't_with_fallback', key: 'actions.add_to_cart', fallback: 'Add to cart' %}
+                      </span>
                     </span>
                   </button>
                 {%- endcapture -%}
+
                 {%- capture content -%}
                   {% render 'tool-tip-trigger',
                     button: quickAddButton,
                     context: 'QuickAdd',
-                    tool-tip-classes: 'quick-add-modal',
+                    wrapper_class: 'quick-add-modal',
                   %}
                 {%- endcapture -%}
+
                 {% render 'quick-add', content: content %}
               {%- else -%}
                 {%- capture content -%}
                   <button
                     type="button" class="text-link quick-add-btn"
-                    title="{{ 'products.product.add_to_cart' | t }}"
+                    title="
+                      {% render 't_with_fallback', key: 'actions.add_to_cart', fallback: 'Add to cart' -%}
+                    "
                     data-id="{{ product.selected_or_first_available_variant.id }}"
                     data-single-variant-quick-add
                   >
                     <span class="btn btn--circle btn--icon">
-                      {% render 'icon-plus' %}
-                      <span class="icon__fallback-text">{{ 'products.product.add_to_cart' | t }}</span>
+                      {% render 'icon', name: 'plus' %}
+                      <span class="icon__fallback-text visually-hidden">
+                        {% render 't_with_fallback', key: 'actions.add_to_cart', fallback: 'Add to cart' %}
+                      </span>
                     </span>
                   </button>
                 {%- endcapture -%}
@@ -146,19 +206,20 @@
 
             {%- unless product.available -%}
               <div class="grid-product__tag grid-product__tag--sold-out">
-                {{ 'products.product.sold_out' | t }}
+                {% render 't_with_fallback', key: 'info.sold_out', fallback: 'Sold Out' %}
               </div>
             {%- endunless -%}
             {%- if on_sale and product.available -%}
               <div class="grid-product__tag grid-product__tag--sale">
-                {{ 'products.general.sale' | t }}
+                {% render 't_with_fallback', key: 'labels.sale', fallback: 'Sale' %}
               </div>
             {%- endif -%}
           </div>
 
           {%- if fixed_aspect_ratio -%}
             <div
-              class="grid__image-ratio grid__image-ratio--{% if image_style == 'circle' %}square{% else %}{{ product_grid_image_size }}{% endif %}">
+              class="grid__image-ratio grid__image-ratio--{% if image_style == 'circle' %}square{% else %}{{ product_grid_image_size }}{% endif %}"
+            >
               {%- capture image_classes -%}
                 {% unless product_grid_image_fill %} grid__image-contain{% endunless %} image-style--{{ image_style }}
               {%- endcapture -%}
@@ -169,11 +230,13 @@
                   sizes: sizes,
                   sizeVariable: sizeVariable,
                   fallback: fallback,
-                  widths: '160, 200, 280, 360, 540, 720, 900',
+                  widths: '160, 200, 280, 360, 540, 720, 900'
                 -%}
               {%- else -%}
-                {%- capture placeholder -%}product-{% cycle 1, 2, 3, 4, 5, 6 %}{%- endcapture -%}
-                <div class="product-image--placeholder">{{ placeholder | placeholder_svg_tag: 'placeholder-svg' }}</div>
+                <div class="product-image--placeholder">
+                  {%- capture placeholder -%}product-{% cycle 1, 2, 3, 4, 5, 6 %}{%- endcapture -%}
+                  {%- render 'placeholder-svg', name: placeholder -%}
+                </div>
               {%- endif -%}
             </div>
           {%- else -%}
@@ -183,7 +246,11 @@
                 assign ratio = preview_image.aspect_ratio
               endif
             -%}
-            <div {% if preview_image != blank %}style="height: 0; padding-bottom: {{ 100 | divided_by: ratio }}%;"{% endif %}>
+            <div
+              {% if preview_image != blank %}
+                style="height: 0; padding-bottom: {{ 100 | divided_by: ratio }}%;"
+              {% endif %}
+            >
               {%- if preview_image != blank -%}
                 {%- render 'image-element',
                   img: preview_image,
@@ -191,11 +258,13 @@
                   sizes: sizes,
                   sizeVariable: sizeVariable,
                   fallback: fallback,
-                  widths: '360, 540, 720, 900, 1080',
+                  widths: '360, 540, 720, 900, 1080'
                 -%}
               {%- else -%}
-                {%- capture placeholder -%}product-{% cycle 1, 2, 3, 4, 5, 6 %}{%- endcapture -%}
-                <div class="product-image--placeholder">{{ placeholder | placeholder_svg_tag: 'placeholder-svg' }}</div>
+                <div class="product-image--placeholder">
+                  {%- capture placeholder -%}product-{% cycle 1, 2, 3, 4, 5, 6 %}{%- endcapture -%}
+                  {%- render 'placeholder-svg', name: placeholder -%}
+                </div>
               {%- endif -%}
             </div>
           {%- endif -%}
@@ -214,18 +283,22 @@
                 sizes: sizes,
                 sizeVariable: sizeVariable,
                 fallback: fallback,
-                widths: '360, 540, 720, 1000',
+                widths: '360, 540, 720, 1000'
               -%}
             </div>
           {%- endif -%}
 
           {%- if enable_swatches -%}
-            {%- assign swatch_trigger = 'products.general.color_swatch_trigger' | t | downcase -%}
+            {%- capture swatch_trigger -%}
+              {% render 't_with_fallback', key: 'trigger.color_swatch', fallback: 'color' %}
+            {%- endcapture -%}
+            {%- assign swatch_trigger = swatch_trigger | downcase -%}
+
             {%- for option in product.options_with_values -%}
               {%- liquid
                 assign option_name = option.name | downcase
                 assign is_color = false
-                if option_name contains swatch_trigger
+                if swatch_trigger contains option_name
                   assign is_color = true
                 elsif swatch_trigger == 'color' and option_name contains 'colour'
                   assign is_color = true
@@ -241,8 +314,8 @@
 
                     {%- if variant.image -%}
                       <div
-                        class="grid-product__color-image grid-product__color-image--{{ variant.id }}">
-                      </div>
+                        class="grid-product__color-image grid-product__color-image--{{ variant.id }}"
+                      ></div>
                     {%- endif -%}
                   {%- endunless -%}
                 {%- endfor -%}
@@ -257,59 +330,62 @@
               {%- render 'swatches', product: product -%}
             {%- endif -%}
 
+            {%- if prefix_enable and product.metafields.archetype.prefix.value != blank -%}
+              <div class="grid-product__vendor grid-product--prefix">
+                {{ product.metafields.archetype.prefix.value | escape }}
+              </div>
+            {%- endif -%}
+
             <div class="grid-product__title">{{ product.title }}</div>
-              {%- if vendor_enable -%}
-                <div class="grid-product__vendor">{{ product.vendor }}</div>
-              {%- endif -%}
-            </div>
-            <div class="grid-item__meta-secondary">
-              <div class="grid-product__price">
-                {%- if product.price_varies -%}
-                  <span class="grid-product__price--current">
-                    {%- render 'price-varies',
-                      price: product.price_min,
-                      shop: shop,
-                      superscript_decimals: superscript_decimals,
-                    -%}
-                  </span>
-                {%- else -%}
-                  {%- if on_sale -%}
-                    <span class="visually-hidden">{{ 'products.general.sale_price' | t }}</span>
-                  {%- endif -%}
-                  <span class="grid-product__price--current">
-                    {%- render 'price',
-                      price: product.price,
-                      shop: shop,
-                      superscript_decimals: superscript_decimals,
-                    -%}
-                  </span>
-                {%- endif -%}
+
+            {%- if vendor_enable -%}
+              <div class="grid-product__vendor">{{ product.vendor }}</div>
+            {%- endif -%}
+          </div>
+          <div class="grid-item__meta-secondary">
+            <div class="grid-product__price">
+              {%- if product.price_varies -%}
+                <span class="grid-product__price--current">
+                  {%- render 'price-varies', price: product.price_min -%}
+                </span>
+              {%- else -%}
                 {%- if on_sale -%}
-                  <span class="visually-hidden">{{ 'products.general.regular_price' | t }}</span>
-                  <span class="grid-product__price--original">
-                    {%- render 'price',
-                      price: product.compare_at_price,
-                      shop: shop,
-                      superscript_decimals: superscript_decimals,
-                    -%}
+                  <span class="visually-hidden">
+                    {% render 't_with_fallback', key: 'labels.sale_price', fallback: 'Sale price' -%}
                   </span>
-
-                  {%- if product_save_amount -%}
-                    {%- if product_save_type == 'dollar' -%}
-                      {%- capture saved_amount -%}{{ product.compare_at_price | minus: product.price | money_without_trailing_zeros }}{%- endcapture -%}
-                    {%- else -%}
-                      {%- capture saved_amount -%}{{ product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round }}%{%- endcapture -%}
-                    {%- endif -%}
-                    <span class="grid-product__price--savings">
-                      {{ 'products.general.save_html' | t: saved_amount: saved_amount }}
-                    </span>
-                  {%- endif -%}
                 {%- endif -%}
+                <span class="grid-product__price--current">
+                  {%- render 'price', price: product.price -%}
+                </span>
+              {%- endif -%}
+              {%- if on_sale -%}
+                <span class="visually-hidden">
+                  {% render 't_with_fallback', key: 'labels.regular_price', fallback: 'Regular price' -%}
+                </span>
+                <span class="grid-product__price--original">
+                  {%- render 'price', price: product.compare_at_price -%}
+                </span>
 
-                {%- assign product_variant = product.selected_or_first_available_variant -%}
-                {%- if product_variant.unit_price_measurement -%}
-                  <div class="product__unit-price">
-                    {%- capture unit_price_base_unit -%}
+                {%- if product_save_amount -%}
+                  {%- if product_save_type == 'dollar' -%}
+                    {%- capture saved_amount -%}{{ product.compare_at_price | minus: product.price | money_without_trailing_zeros }}{%- endcapture -%}
+                  {%- else -%}
+                    {%- capture saved_amount -%}{{ product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round }}%{%- endcapture -%}
+                  {%- endif -%}
+                  <span class="grid-product__price--savings">
+                    {% assign info_save_amount = 'info.save_amount' | t: saved_amount: saved_amount %}
+                    {%- capture fallback_info_save_amount -%}
+                      Save {{ saved_amount }}
+                    {%- endcapture -%}
+                    {% render 't_with_fallback', t: info_save_amount, fallback: fallback_info_save_amount %}
+                  </span>
+                {%- endif -%}
+              {%- endif -%}
+
+              {%- assign product_variant = product.selected_or_first_available_variant -%}
+              {%- if product_variant.unit_price_measurement -%}
+                <div class="product__unit-price">
+                  {%- capture unit_price_base_unit -%}
                       {%- if product_variant.unit_price_measurement -%}
                         {%- if product_variant.unit_price_measurement.reference_value != 1 -%}
                           {{ product_variant.unit_price_measurement.reference_value }}
@@ -318,27 +394,24 @@
                       {%- endif -%}
                     {%- endcapture -%}
 
-                    {{ product_variant.unit_price | money }}/{{ unit_price_base_unit }}
-                  </div>
-                {%- endif -%}
-              </div>
-
-              {%- if enable_product_reviews -%}
-                <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+                  {{ product_variant.unit_price | money }}/{{ unit_price_base_unit }}
+                </div>
               {%- endif -%}
             </div>
-
-            {%- if enable_swatches and type == 'horizontal' -%}
-              {%- render 'swatches', product: product -%}
-            {%- endif -%}
+          </div>
+          {%- if enable_swatches and type == 'horizontal' -%}
+            {%- render 'swatches', product: product -%}
+          {%- endif -%}
         </div>
       </a>
-    </div>
-  </product-grid-item>
 
-  <template data-island>
-    <script type="module">
-      import 'components/product-grid-item';
-    </script>
-  </template>
-</is-land>
+      {%- if enable_product_tags -%}
+        {% render 'product-tags', product: product %}
+      {%- endif -%}
+
+      {%- if enable_add_to_cart -%}
+        {% render 'add-to-cart', product: product, class_name: 'grid-product__add-to-cart' %}
+      {%- endif -%}
+    </div>
+  </div>
+</div>

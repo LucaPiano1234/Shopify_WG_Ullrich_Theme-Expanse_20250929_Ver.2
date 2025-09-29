@@ -1,26 +1,19 @@
 
-{%- render 'section-giftcard-header',
-    section: section,
-    logo: section.settings.logo,
-    mobile_logo_width: section.settings.mobile_logo_width,
-    desktop_logo_width: section.settings.desktop_logo_width,
-    routes: routes,
-    shop: shop,
--%}
+{%- render 'section-giftcard-header' -%}
 
 {% schema %}
 {
-  "name": "t:sections.giftcard-header.name",
+  "name": "t:labels.header",
   "settings": [
     {
       "type": "image_picker",
       "id": "logo",
-      "label": "t:sections.giftcard-header.settings.logo.label"
+      "label": "t:labels.logo"
     },
     {
       "type": "range",
       "id": "desktop_logo_width",
-      "label": "t:sections.giftcard-header.settings.desktop_logo_width.label",
+      "label": "t:labels.desktop_logo_width",
       "default": 200,
       "min": 100,
       "max": 400,
@@ -30,13 +23,13 @@
     {
       "type": "range",
       "id": "mobile_logo_width",
-      "label": "t:sections.giftcard-header.settings.mobile_logo_width.label",
+      "label": "t:labels.mobile_logo_width",
       "default": 140,
       "min": 60,
       "max": 200,
       "step": 10,
       "unit": "px",
-      "info": "t:sections.giftcard-header.settings.mobile_logo_width.info"
+      "info": "t:info.set_as_max_width"
     }
   ],
   "default": {

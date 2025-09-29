@@ -1,55 +1,49 @@
-{% render 'section-text-columns',
-  section: section,
-  divider: section.settings.divider,
-  title: section.settings.title,
-  align_text: section.settings.align_text,
-  color_scheme: section.settings.color_scheme
-%}
+{%- render 'section-text-columns' -%}
 
 {% schema %}
 {
-  "name": "t:sections.text-columns.name",
+  "name": "t:labels.text_columns_with",
   "settings": [
     {
       "type": "text",
       "id": "title",
-      "label": "t:sections.text-columns.settings.title.label"
+      "label": "t:labels.heading"
     },
     {
       "type": "select",
       "id": "align_text",
-      "label": "t:sections.text-columns.settings.align_text.label",
+      "label": "t:labels.alignment",
       "default": "left",
       "options": [
         {
           "value": "left",
-          "label": "t:sections.text-columns.settings.align_text.options.left.label"
+          "label": "t:labels.alignments.left"
         },
         {
           "value": "center",
-          "label": "t:sections.text-columns.settings.align_text.options.center.label"
+          "label": "t:labels.alignments.centered"
         },
         {
           "value": "right",
-          "label": "t:sections.text-columns.settings.align_text.options.right.label"
+          "label": "t:labels.alignments.right"
         }
       ]
     },
     {
       "type": "checkbox",
       "id": "divider",
-      "label": "t:sections.text-columns.settings.divider.label",
+      "label": "t:actions.show_section_divider",
       "default": false
     },
     {
       "type": "select",
       "id": "color_scheme",
-      "label": "t:sections.text-columns.settings.color_scheme.label",
+      "label": "t:labels.color_scheme",
       "default": "none",
       "options": [
         {
           "value": "none",
-          "label": "t:sections.text-columns.settings.color_scheme.options.none.label"
+          "label": "t:labels.none"
         },
         {
           "value": "1",
@@ -69,79 +63,79 @@
   "blocks": [
     {
       "type": "text_block",
-      "name": "t:sections.text-columns.blocks.column.name",
+      "name": "t:labels.column",
       "settings": [
         {
           "type": "checkbox",
           "id": "enable_image",
-          "label": "t:sections.text-columns.blocks.column.settings.enable_image.label",
+          "label": "t:actions.show_image",
           "default": true
         },
         {
           "type": "image_picker",
           "id": "image",
-          "label": "t:sections.text-columns.blocks.column.settings.image.label"
+          "label": "t:labels.image"
         },
         {
           "type": "select",
           "id": "image_mask",
-          "label": "t:common.image_mask.label",
+          "label": "t:labels.image_shape",
           "default": "none",
           "options": [
             {
               "value": "none",
-              "label": "t:common.image_mask.options.none.label"
+              "label": "t:labels.none"
             },
             {
               "value": "portrait",
-              "label": "t:common.image_mask.options.portrait.label"
+              "label": "t:labels.portrait"
             },
             {
               "value": "landscape",
-              "label": "t:common.image_mask.options.landscape.label"
+              "label": "t:labels.landscape"
             },
             {
               "value": "square",
-              "label": "t:common.image_mask.options.square.label"
+              "label": "t:labels.square"
             },
             {
               "value": "rounded",
-              "label": "t:common.image_mask.options.rounded.label"
+              "label": "t:labels.rounded"
             },
             {
               "value": "rounded-wave",
-              "label": "t:common.image_mask.options.rounded-wave.label"
+              "label": "t:labels.rounded_wave"
             },
             {
               "value": "rounded-top",
-              "label": "t:common.image_mask.options.rounded-top.label"
+              "label": "t:labels.arch"
             },
             {
               "value": "star",
-              "label": "t:common.image_mask.options.star.label"
+              "label": "t:labels.star"
             },
             {
               "value": "splat-1",
-              "label": "t:common.image_mask.options.splat-1.label"
+              "label": "t:labels.splat_1"
             },
             {
               "value": "splat-2",
-              "label": "t:common.image_mask.options.splat-2.label"
+              "label": "t:labels.splat_2"
             },
             {
               "value": "splat-3",
-              "label": "t:common.image_mask.options.splat-3.label"
+              "label": "t:labels.splat_3"
             },
             {
               "value": "splat-4",
-              "label": "t:common.image_mask.options.splat-4.label"
+              "label": "t:labels.splat_4"
             }
           ]
         },
         {
           "type": "range",
           "id": "image_width",
-          "label": "t:sections.text-columns.blocks.column.settings.image_width.label",
+          "label": "t:labels.image_width",
           "default": 650,
           "min": 60,
           "max": 650,
@@ -151,32 +145,32 @@
         {
           "type": "text",
           "id": "title",
-          "label": "t:sections.text-columns.blocks.column.settings.title.label",
+          "label": "t:labels.heading",
           "default": "Example title"
         },
         {
           "type": "richtext",
           "id": "text",
-          "label": "t:sections.text-columns.blocks.column.settings.text.label",
+          "label": "t:labels.text",
           "default": "<p>Use this section to explain a set of product features, to link to a series of pages, or to answer common questions.</p>"
         },
         {
           "type": "text",
           "id": "button_label",
-          "label": "t:sections.text-columns.blocks.column.settings.button_label.label",
+          "label": "t:labels.button_label",
           "default": "Optional button"
         },
         {
           "type": "url",
           "id": "button_link",
-          "label": "t:sections.text-columns.blocks.column.settings.button_link.label"
+          "label": "t:labels.link"
         }
       ]
     }
   ],
   "presets": [
     {
-      "name": "t:sections.text-columns.presets.text_columns_with_images.name",
+      "name": "t:labels.text_columns_with",
       "blocks": [
         {
           "type": "text_block"

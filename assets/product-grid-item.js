@@ -1,23 +1,18 @@
-import AOS from '@archetype-themes/scripts/helpers/init-AOS';
-import '@archetype-themes/scripts/config';
-import Swatches from '@archetype-themes/scripts/modules/swatches';
+import '@archetype-themes/scripts/config'
+import Swatches from '@archetype-themes/scripts/modules/swatches'
 
 class ProductGridItem extends HTMLElement {
   constructor() {
-    super();
+    super()
 
-    this.swatches = new Swatches(this);
+    this.swatches = new Swatches(this)
 
-    document.dispatchEvent(new CustomEvent('product-grid-item:loaded'));
-
-    AOS.refreshHard();
-
-    // Refresh reviews app
-    if (window.SPR) {
-      SPR.initDomEls();
-      SPR.loadBadges();
-    }
+    /**
+     * @event product-grid-item:loaded
+     * @description Fires when the product grid item has been loaded.
+     */
+    document.dispatchEvent(new CustomEvent('product-grid-item:loaded'))
   }
 }
 
-customElements.define('product-grid-item', ProductGridItem);
+customElements.define('product-grid-item', ProductGridItem)

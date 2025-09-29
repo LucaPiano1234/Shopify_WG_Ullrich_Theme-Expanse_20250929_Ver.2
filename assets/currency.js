@@ -1,5 +1,4 @@
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/utils';
+import { defaultTo } from '@archetype-themes/utils/utils'
 
 /**
  * Currency Helpers
@@ -8,93 +7,80 @@ import '@archetype-themes/scripts/helpers/utils';
  *
  * Current contents
  * - formatMoney - Takes an amount in cents and returns it as a formatted dollar value.
- *   - When theme.settings.superScriptPrice is enabled, format cents in <sup> tag
+ *   - When superScriptPrice is enabled, format cents in <sup> tag
  * - getBaseUnit - Splits unit price apart to get value + unit
  *
  */
 
-theme.Currency = (function() {
-  var moneyFormat = '${{amount}}';
-  var superScript = theme && theme.settings && theme.settings.superScriptPrice;
+let moneyFormat = '${{amount}}'
 
-  function formatMoney(cents, format) {
-    if (!format) {
-      format = theme.settings.moneyFormat;
+export function formatMoney(cents, format, superScript) {
+  if (typeof cents === 'string') {
+    cents = cents.replace('.', '')
+  }
+  let value = ''
+  let placeholderRegex = /\{\{\s*(\w+)\s*\}\}/
+  let formatString = format || moneyFormat
+
+  function formatWithDelimiters(number, precision, thousands, decimal) {
+    precision = defaultTo(precision, 2)
+    thousands = defaultTo(thousands, ',')
+    decimal = defaultTo(decimal, '.')
+
+    if (isNaN(number) || number == null) {
+      return 0
     }
 
-    if (typeof cents === 'string') {
-      cents = cents.replace('.', '');
-    }
-    var value = '';
-    var placeholderRegex = /\{\{\s*(\w+)\s*\}\}/;
-    var formatString = (format || moneyFormat);
+    number = (number / 100.0).toFixed(precision)
 
-    function formatWithDelimiters(number, precision, thousands, decimal) {
-      precision = theme.utils.defaultTo(precision, 2);
-      thousands = theme.utils.defaultTo(thousands, ',');
-      decimal = theme.utils.defaultTo(decimal, '.');
+    let parts = number.split('.')
+    let dollarsAmount = parts[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + thousands)
+    let centsAmount = parts[1] ? decimal + parts[1] : ''
 
-      if (isNaN(number) || number == null) {
-        return 0;
+    return dollarsAmount + centsAmount
+  }
+
+  switch (formatString.match(placeholderRegex)[1]) {
+    case 'amount':
+      value = formatWithDelimiters(cents, 2)
+
+      if (superScript && value && value.includes('.')) {
+        value = value.replace('.', '<sup>') + '</sup>'
       }
 
-      number = (number / 100.0).toFixed(precision);
+      break
+    case 'amount_no_decimals':
+      value = formatWithDelimiters(cents, 0)
+      break
+    case 'amount_with_comma_separator':
+      value = formatWithDelimiters(cents, 2, '.', ',')
 
-      var parts = number.split('.');
-      var dollarsAmount = parts[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + thousands);
-      var centsAmount = parts[1] ? (decimal + parts[1]) : '';
+      if (superScript && value && value.includes(',')) {
+        value = value.replace(',', '<sup>') + '</sup>'
+      }
 
-      return dollarsAmount + centsAmount;
-    }
-
-    switch (formatString.match(placeholderRegex)[1]) {
-      case 'amount':
-        value = formatWithDelimiters(cents, 2);
-
-        if (superScript && value && value.includes('.')) {
-          value = value.replace('.', '<sup>') + '</sup>';
-        }
-
-        break;
-      case 'amount_no_decimals':
-        value = formatWithDelimiters(cents, 0);
-        break;
-      case 'amount_with_comma_separator':
-        value = formatWithDelimiters(cents, 2, '.', ',');
-
-        if (superScript && value && value.includes(',')) {
-          value = value.replace(',', '<sup>') + '</sup>';
-        }
-
-        break;
-      case 'amount_no_decimals_with_comma_separator':
-        value = formatWithDelimiters(cents, 0, '.', ',');
-        break;
-      case 'amount_no_decimals_with_space_separator':
-        value = formatWithDelimiters(cents, 0, ' ');
-        break;
-    }
-
-    return formatString.replace(placeholderRegex, value);
+      break
+    case 'amount_no_decimals_with_comma_separator':
+      value = formatWithDelimiters(cents, 0, '.', ',')
+      break
+    case 'amount_no_decimals_with_space_separator':
+      value = formatWithDelimiters(cents, 0, ' ')
+      break
   }
 
-  function getBaseUnit(variant) {
-    if (!variant) {
-      return;
-    }
+  return formatString.replace(placeholderRegex, value)
+}
 
-    if (!variant.unit_price_measurement || !variant.unit_price_measurement.reference_value) {
-      return;
-    }
-
-    return variant.unit_price_measurement.reference_value === 1
-      ? variant.unit_price_measurement.reference_unit
-      : variant.unit_price_measurement.reference_value +
-          variant.unit_price_measurement.reference_unit;
+export function getBaseUnit(variant) {
+  if (!variant) {
+    return
   }
 
-  return {
-    formatMoney: formatMoney,
-    getBaseUnit: getBaseUnit
+  if (!variant.unit_price_measurement || !variant.unit_price_measurement.reference_value) {
+    return
   }
-})();
+
+  return variant.unit_price_measurement.reference_value === 1
+    ? variant.unit_price_measurement.reference_unit
+    : variant.unit_price_measurement.reference_value + variant.unit_price_measurement.reference_unit
+}

@@ -1,26 +1,20 @@
-// This is the javascript entrypoint for the background-image-text section.
-// This file and all its inclusions will be processed through esbuild
-
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/init-observer';
-import '@archetype-themes/scripts/modules/parallax';
-import '@archetype-themes/scripts/helpers/sections';
+import { executeJSmodules } from '@archetype-themes/utils/utils'
 
 class BackgroundImage extends HTMLElement {
-  constructor () {
-    super()
-    this.el = this.querySelector('[data-section-type="background-image"]')
-    this.sectionId = this.el.dataset.sectionId
+  connectedCallback() {
+    const element = this.querySelector('[data-section-type="background-image"]')
 
-    theme.initWhenVisible({
-      element: this.el,
-      callback: this.init.bind(this)
-    })
-  }
+    element.classList.remove('loading', 'loading--delayed')
+    element.classList.add('loaded')
 
-  init () {
-    this.el.classList.remove('loading', 'loading--delayed')
-    this.el.classList.add('loaded')
+    if (Shopify.designMode && element.hasAttribute('data-parallax')) {
+      requestAnimationFrame(() => {
+        const scripts = this.querySelectorAll('script[type="module"]')
+        if (scripts.length) {
+          executeJSmodules(scripts)
+        }
+      })
+    }
   }
 }
 

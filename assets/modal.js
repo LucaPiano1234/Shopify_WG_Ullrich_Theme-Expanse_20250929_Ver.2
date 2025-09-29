@@ -1,10 +1,18 @@
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/a11y';
-import '@archetype-themes/scripts/helpers/delegate';
+import { trapFocus, removeTrapFocus } from '@archetype-themes/utils/a11y'
 
-theme.Modals = (function() {
-  function Modal(id, name, options) {
-    var defaults = {
+export default class Modals {
+  constructor(id, name, options) {
+    this.id = id
+    this.modal = document.getElementById(id)
+    this.boundClose = this.close.bind(this)
+
+    if (!this.modal) {
+      return false
+    }
+
+    this.modalContent = this.modal.querySelector('.modal__inner')
+
+    const defaults = {
       close: '.js-modal-close',
       open: '.js-modal-open-' + name,
       openClass: 'modal--is-active',
@@ -12,100 +20,93 @@ theme.Modals = (function() {
       bodyOpenClass: ['modal-open'],
       bodyOpenSolidClass: 'modal-open--solid',
       bodyClosingClass: 'modal-closing',
-      closeOffContentClick: true
-    };
-
-    this.id = id;
-    this.modal = document.getElementById(id);
-
-    if (!this.modal) {
-      return false;
+      closeOffContentClick: true,
+      trapFocus: true
     }
 
-    this.modalContent = this.modal.querySelector('.modal__inner');
+    this.config = Object.assign(defaults, options)
+    this.modalIsOpen = false
+    this.focusOnOpen = this.config.focusIdOnOpen ? document.getElementById(this.config.focusIdOnOpen) : this.modal
+    this.isSolid = this.config.solid
 
-    this.config = Object.assign(defaults, options);
-    this.modalIsOpen = false;
-    this.focusOnOpen = this.config.focusIdOnOpen ? document.getElementById(this.config.focusIdOnOpen) : this.modal;
-    this.isSolid = this.config.solid;
-
-    this.init();
+    this.init()
   }
 
-  Modal.prototype.init = function() {
-    document.querySelectorAll(this.config.open).forEach(btn => {
-      btn.setAttribute('aria-expanded', 'false');
-      btn.addEventListener('click', this.open.bind(this));
-    });
+  init = function () {
+    document.querySelectorAll(this.config.open).forEach((btn) => {
+      btn.setAttribute('aria-expanded', 'false')
+      btn.addEventListener('click', this.open.bind(this))
+    })
 
-    this.modal.querySelectorAll(this.config.close).forEach(btn => {
-      btn.addEventListener('click', this.close.bind(this));
-    });
+    this.modal.querySelectorAll(this.config.close).forEach((btn) => {
+      btn.addEventListener('click', this.close.bind(this))
+    })
 
     // Close modal if a drawer is opened
-    document.addEventListener('drawerOpen', function() {
-      this.close();
-    }.bind(this));
-  };
+    document.addEventListener(
+      'drawerOpen',
+      function () {
+        this.close()
+      }.bind(this)
+    )
+  }
 
-  Modal.prototype.open = function(evt) {
+  open = function (evt) {
     // Keep track if modal was opened from a click, or called by another function
-    var externalCall = false;
+    let externalCall = false
 
     // don't open an opened modal
     if (this.modalIsOpen) {
-      return;
+      return
     }
 
     // Prevent following href if link is clicked
     if (evt) {
-      evt.preventDefault();
+      evt.preventDefault()
     } else {
-      externalCall = true;
+      externalCall = true
     }
 
     // Without this, the modal opens, the click event bubbles up to $nodes.page
     // which closes the modal.
     if (evt && evt.stopPropagation) {
-      evt.stopPropagation();
+      evt.stopPropagation()
       // save the source of the click, we'll focus to this on close
-      this.activeSource = evt.currentTarget.setAttribute('aria-expanded', 'true');
+      this.activeSource = evt.currentTarget.setAttribute('aria-expanded', 'true')
     }
 
     if (this.modalIsOpen && !externalCall) {
-      this.close();
+      this.close()
     }
 
-    this.modal.classList.add(this.config.openClass);
+    this.modal.classList.add(this.config.openClass)
 
-    document.documentElement.classList.add(...this.config.bodyOpenClass);
+    document.documentElement.classList.add(...this.config.bodyOpenClass)
 
     if (this.isSolid) {
-      document.documentElement.classList.add(this.config.bodyOpenSolidClass);
+      document.documentElement.classList.add(this.config.bodyOpenSolidClass)
     }
 
-    this.modalIsOpen = true;
+    this.modalIsOpen = true
 
     // Delay trap focus to ensure elements are seen by screen readers
     setTimeout(() => {
-      theme.a11y.trapFocus({
-        container: this.modal,
-        elementToFocus: this.focusOnOpen,
-        namespace: 'modal_focus'
-      });
-    }, 100);
+      if (!this.config.trapFocus) return
+      trapFocus(this.modal, {
+        elementToFocus: this.focusOnOpen
+      })
+    }, 100)
 
+    document.dispatchEvent(new CustomEvent('modalOpen'))
+    document.dispatchEvent(new CustomEvent('modalOpen.' + this.id))
 
-    document.dispatchEvent(new CustomEvent('modalOpen'));
-    document.dispatchEvent(new CustomEvent('modalOpen.' + this.id));
+    this.bindEvents()
+  }
 
-    this.bindEvents();
-  };
-
-  Modal.prototype.close = function(evt) {
+  close = function (evt) {
     // don't close a closed modal
     if (!this.modalIsOpen) {
-      return;
+      return
     }
 
     // Do not close modal if click happens inside modal content
@@ -113,63 +114,62 @@ theme.Modals = (function() {
       if (evt.target.closest('.js-modal-close')) {
         // Do not close if using the modal close button
       } else if (evt.target.closest('.modal__inner')) {
-        return;
+        return
       }
     }
 
     // deselect any focused form elements
-    document.activeElement.blur();
+    document.activeElement.blur()
 
-    this.modal.classList.remove(this.config.openClass);
-    this.modal.classList.add(this.config.closingClass);
+    this.modal.classList.remove(this.config.openClass)
+    this.modal.classList.add(this.config.closingClass)
 
-    document.documentElement.classList.remove(...this.config.bodyOpenClass);
-    document.documentElement.classList.add(this.config.bodyClosingClass);
+    document.documentElement.classList.remove(...this.config.bodyOpenClass)
+    document.documentElement.classList.add(this.config.bodyClosingClass)
 
-    window.setTimeout(function() {
-      document.documentElement.classList.remove(this.config.bodyClosingClass);
-      this.modal.classList.remove(this.config.closingClass);
-      if (this.activeSource && this.activeSource.getAttribute('aria-expanded')) {
-        this.activeSource.setAttribute('aria-expanded', 'false').focus();
-      }
-    }.bind(this), 500); // modal close css transition
+    window.setTimeout(
+      function () {
+        document.documentElement.classList.remove(this.config.bodyClosingClass)
+        this.modal.classList.remove(this.config.closingClass)
+        if (this.activeSource && this.activeSource.getAttribute('aria-expanded')) {
+          this.activeSource.setAttribute('aria-expanded', 'false').focus()
+        }
+      }.bind(this),
+      500
+    ) // modal close css transition
 
     if (this.isSolid) {
-      document.documentElement.classList.remove(this.config.bodyOpenSolidClass);
+      document.documentElement.classList.remove(this.config.bodyOpenSolidClass)
     }
 
-    this.modalIsOpen = false;
+    this.modalIsOpen = false
 
-    theme.a11y.removeTrapFocus({
-      container: this.modal,
-      namespace: 'modal_focus'
-    });
+    if (this.config.trapFocus) removeTrapFocus()
 
-    document.dispatchEvent(new CustomEvent('modalClose.' + this.id));
+    document.dispatchEvent(new CustomEvent('modalClose.' + this.id))
 
-    this.unbindEvents();
-  };
+    this.unbindEvents()
+  }
 
-  Modal.prototype.bindEvents = function() {
-    window.on('keyup.modal', function(evt) {
-      if (evt.keyCode === 27) {
-        this.close();
-      }
-    }.bind(this));
+  bindEvents() {
+    window.addEventListener(
+      'keyup',
+      function (evt) {
+        if (evt.keyCode === 27) {
+          this.close()
+        }
+      }.bind(this)
+    )
 
     if (this.config.closeOffContentClick) {
       // Clicking outside of the modal content also closes it
-      this.modal.on('click.modal', this.close.bind(this));
+      this.modal.addEventListener('click', this.boundClose)
     }
-  };
+  }
 
-  Modal.prototype.unbindEvents = function() {
-    document.documentElement.off('.modal');
-
+  unbindEvents() {
     if (this.config.closeOffContentClick) {
-      this.modal.off('.modal');
+      this.modal.removeEventListener('click', this.boundClose)
     }
-  };
-
-  return Modal;
-})();
+  }
+}

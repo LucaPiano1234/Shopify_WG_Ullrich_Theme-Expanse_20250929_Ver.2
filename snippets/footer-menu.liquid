@@ -1,24 +1,42 @@
-{% comment %}
-  /**
-   * @param {object} block - block object
-   * @param {object} linklists - linklists object
-   * @param {object} routes - routes object
-   */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders the footer menu block.
 
-<h2 class="footer__title">
-  {%- if block.settings.title == blank -%}
-    {{ linklists[block.settings.menu].title }}
-  {%- else -%}
-    {{ block.settings.title }}
-  {%- endif -%}
+  Accepts:
+  - block {block} - The block object
+  - menu {string} - The menu handle
+  - title {string} - The title of the block
+  - enable_account_link {boolean} - Whether or not to show the account link
+  - blocks_heading_size - The heading size for the block
+
+  Usage:
+  {% render 'footer-menu', block: block %}
+{%- endcomment -%}
+
+{%- liquid
+  assign menu = menu | default: block.settings.menu
+  assign title = title | default: block.settings.title
+  assign enable_account_link = enable_account_link | default: block.settings.enable_account_link, allow_false: true | default: true, allow_false: true
+  assign blocks_heading_size = blocks_heading_size | default: block.settings.heading_size | default: 'h4'
+-%}
+
+<h2 class="footer__title {{ blocks_heading_size }}">
+  {{ title | default: linklists[menu].title }}
 </h2>
 
 <ul class="footer__menu">
-  {%- for link in linklists[block.settings.menu].links -%}
-    <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+  {%- for link in linklists[menu].links -%}
+    <li>
+      <a href="{{ link.url }}">{{ link.title }}</a>
+    </li>
   {%- endfor -%}
-  {%- if block.settings.enable_account_link -%}
-    <li><a href="{{ routes.account_url }}">{{ 'customer.account.title' | t }}</a></li>
+
+  {%- if enable_account_link -%}
+    <li>
+      <a href="{{ routes.account_url }}">
+        {% assign labels_my_account = 'labels.my_account' | t %}
+        {% render 't_with_fallback', t: labels_my_account, fallback: 'My account' -%}
+      </a>
+    </li>
   {%- endif -%}
 </ul>

@@ -1,50 +1,61 @@
-// This is the javascript entrypoint for the collection-header section.
-// This file and all its inclusions will be processed through postcss
+import { EVENTS } from '@archetype-themes/utils/events'
 
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/modules/header-nav';
-import '@archetype-themes/scripts/modules/parallax';
-import '@archetype-themes/scripts/helpers/sections'
+let hasLoadedBefore = false
 
-theme.CollectionHeader = (function() {
-  var hasLoadedBefore = false;
+class CollectionHeader extends HTMLElement {
+  constructor() {
+    super()
 
-  function CollectionHeader(container) {
-    this.namespace = '.collection-header';
-
-    var heroImageContainer = container.querySelector('.collection-hero');
-    if (heroImageContainer) {
-      if (hasLoadedBefore) {
-        this.checkIfNeedReload();
-      }
-      heroImageContainer.classList.remove('loading', 'loading--delayed');
-      heroImageContainer.classList.add('loaded');
-    } else if (theme.settings.overlayHeader) {
-      theme.headerNav.disableOverlayHeader();
-    }
-
-    hasLoadedBefore = true;
+    this.overlayHeader = false
+    this.heroImageContainer = this.querySelector('.collection-hero')
+    this.handleOverlayHeaderChange = this.handleOverlayHeaderChange.bind(this)
   }
 
-  CollectionHeader.prototype = Object.assign({}, CollectionHeader.prototype, {
-    // A liquid variable in the header needs a full page refresh
-    // if the collection header hero image setting is enabled
-    // and the header is set to sticky. Only necessary in the editor.
-    checkIfNeedReload: function() {
-      if (!Shopify.designMode) {
-        return;
+  connectedCallback() {
+    this.abortController = new AbortController()
+
+    document.addEventListener(EVENTS.overlayHeaderChange, this.handleOverlayHeaderChange, {
+      signal: this.abortController.signal
+    })
+
+    if (this.heroImageContainer) {
+      if (hasLoadedBefore) {
+        this.checkIfNeedReload()
       }
 
-      if (theme.settings.overlayHeader) {
-        var header = document.querySelector('.header-wrapper');
-        if (!header.classList.contains('header-wrapper--overlay')) {
-          location.reload();
-        }
+      this.heroImageContainer.classList.remove('loading', 'loading--delayed')
+      this.heroImageContainer.classList.add('loaded')
+    } else if (this.overlayHeader) {
+      this.dispatchEvent(new CustomEvent(EVENTS.headerOverlayDisable), { bubbles: true })
+    }
+
+    hasLoadedBefore = true
+  }
+
+  disconnectedCallback() {
+    this.abortController.abort()
+  }
+
+  handleOverlayHeaderChange(event) {
+    this.overlayHeader = event.detail.overlayHeader
+
+    if (!this.overlayHeader && !this.heroImageContainer) {
+      this.dispatchEvent(new CustomEvent(EVENTS.headerOverlayDisable), { bubbles: true })
+    }
+  }
+
+  checkIfNeedReload() {
+    if (!Shopify.designMode) {
+      return
+    }
+
+    if (this.overlayHeader) {
+      const header = document.querySelector('.header-wrapper')
+      if (!header.classList.contains('header-wrapper--overlay')) {
+        location.reload()
       }
     }
-  });
+  }
+}
 
-  return CollectionHeader;
-})();
-
-theme.sections.register('collection-header', theme.CollectionHeader);
+customElements.define('section-collection-header', CollectionHeader)

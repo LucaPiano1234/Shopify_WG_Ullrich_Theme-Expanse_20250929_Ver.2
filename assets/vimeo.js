@@ -1,21 +1,15 @@
-import AOS from '@archetype-themes/scripts/helpers/init-AOS';
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/library-loader';
+import { loadScript } from '@archetype-themes/utils/resource-loader'
+import { EVENTS, publish, subscribe } from '@archetype-themes/utils/pubsub'
 
 window.vimeoApiReady = function () {
-  theme.config.vimeoLoading = true
-
   // Because there's no way to check for the Vimeo API being loaded
   // asynchronously, we use this terrible timeout to wait for it being ready
-  checkIfVimeoIsReady()
-    .then(function () {
-      theme.config.vimeoReady = true
-      theme.config.vimeoLoading = false
-      document.dispatchEvent(new CustomEvent('vimeoReady'))
-    })
+  checkIfVimeoIsReady().then(function () {
+    publish(EVENTS.vimeoReady)
+  })
 }
 
-function checkIfVimeoIsReady () {
+function checkIfVimeoIsReady() {
   let wait
   let timeout
 
@@ -37,23 +31,23 @@ function checkIfVimeoIsReady () {
   })
 }
 
-theme.VimeoPlayer = (function () {
-  const classes = {
-    loading: 'loading',
-    loaded: 'loaded',
-    interactable: 'video-interactable'
-  }
+const classes = {
+  loading: 'loading',
+  loaded: 'loaded',
+  interactable: 'video-interactable'
+}
 
-  const defaults = {
-    byline: false,
-    loop: true,
-    muted: true,
-    playsinline: true,
-    portrait: false,
-    title: false
-  }
+const defaults = {
+  byline: false,
+  loop: true,
+  muted: true,
+  playsinline: true,
+  portrait: false,
+  title: false
+}
 
-  function VimeoPlayer (divId, videoId, options) {
+export default class VimeoPlayer {
+  constructor(divId, videoId, options) {
     this.divId = divId
     this.el = document.getElementById(divId)
     this.videoId = videoId
@@ -65,97 +59,102 @@ theme.VimeoPlayer = (function () {
     }
 
     this.setAsLoading()
+    this.checkVimeoReady()
+  }
 
-    if (theme.config.vimeoReady) {
+  async checkVimeoReady() {
+    if (window.Vimeo) {
       this.init()
     } else {
-      theme.LibraryLoader.load('vimeo', window.vimeoApiReady)
-      document.addEventListener('vimeoReady', this.init.bind(this))
+      await loadScript('https://player.vimeo.com/api/player.js')
+      window.vimeoApiReady()
+      this.vimeoReadyUnsubscriber = subscribe(EVENTS.vimeoReady, () => {
+        this.init()
+        this.vimeoReadyUnsubscriber()
+      })
     }
   }
 
-  VimeoPlayer.prototype = Object.assign({}, VimeoPlayer.prototype, {
-    init: function () {
-      const args = defaults
-      args.id = this.videoId
+  init() {
+    const args = defaults
+    args.id = this.videoId
 
-      this.videoPlayer = new Vimeo.Player(this.el, args)
+    this.videoPlayer = new Vimeo.Player(this.el, args)
 
-      this.videoPlayer.ready().then(this.playerReady.bind(this))
-    },
+    this.videoPlayer.ready().then(this.playerReady.bind(this))
+  }
 
-    playerReady: function () {
-      this.iframe = this.el.querySelector('iframe')
-      this.iframe.setAttribute('tabindex', '-1')
+  playerReady() {
+    this.iframe = this.el.querySelector('iframe')
+    this.iframe.setAttribute('tabindex', '-1')
 
-      if (this.options.loop === 'false') {
-        this.videoPlayer.setLoop(false)
-      }
+    if (this.options.loop === 'false') {
+      this.videoPlayer.setLoop(false)
+    }
 
-      // When sound is enabled in section settings,
-      // for some mobile browsers Vimeo video playback
-      // will stop immediately after starting and
-      // will require users to tap the play button once more
-      if (this.options.style === 'sound') {
-        this.videoPlayer.setVolume(1)
-      } else {
-        this.videoPlayer.setVolume(0)
-      }
+    // When sound is enabled in section settings,
+    // for some mobile browsers Vimeo video playback
+    // will stop immediately after starting and
+    // will require users to tap the play button once more
+    if (this.options.style === 'sound') {
+      this.videoPlayer.setVolume(1)
+    } else {
+      this.videoPlayer.setVolume(0)
+    }
 
-      this.setAsLoaded()
+    this.setAsLoaded()
 
-      // pause when out of view
-      const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
+    // pause when out of view
+    const observer = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             this.play()
           } else {
             this.pause()
           }
         })
-      }, { rootMargin: '0px 0px 50px 0px' })
+      },
+      { rootMargin: '0px 0px 50px 0px' }
+    )
 
-      observer.observe(this.iframe)
-    },
+    observer.observe(this.iframe)
+  }
 
-    setAsLoading: function () {
-      if (!this.parent) return
-      this.parent.classList.add(classes.loading)
-    },
+  setAsLoading() {
+    if (!this.parent) return
+    this.parent.classList.add(classes.loading)
+  }
 
-    setAsLoaded: function () {
-      if (!this.parent) return
-      this.parent.classList.remove(classes.loading)
-      this.parent.classList.add(classes.loaded)
-      this.parent.classList.add(classes.interactable) // Once video is loaded, we should be able to interact with it
-      if (Shopify && Shopify.designMode) {
-        if (window.AOS) {AOS.refreshHard()}
-      }
-    },
+  setAsLoaded() {
+    if (!this.parent) return
+    this.parent.classList.remove(classes.loading)
+    this.parent.classList.add(classes.loaded)
+    this.parent.classList.add(classes.interactable) // Once video is loaded, we should be able to interact with it
+  }
 
-    enableInteraction: function () {
-      if (!this.parent) return
-      this.parent.classList.add(classes.interactable)
-    },
+  enableInteraction() {
+    if (!this.parent) return
+    this.parent.classList.add(classes.interactable)
+  }
 
-    play: function () {
-      if (this.videoPlayer && typeof this.videoPlayer.play === 'function') {
-        this.videoPlayer.play()
-      }
-    },
-
-    pause: function () {
-      if (this.videoPlayer && typeof this.videoPlayer.pause === 'function') {
-        this.videoPlayer.pause()
-      }
-    },
-
-    destroy: function () {
-      if (this.videoPlayer && typeof this.videoPlayer.destroy === 'function') {
-        this.videoPlayer.destroy()
-      }
+  play() {
+    if (this.videoPlayer && typeof this.videoPlayer.play === 'function') {
+      this.videoPlayer.play()
     }
-  })
+  }
 
-  return VimeoPlayer
-})()
+  pause() {
+    if (this.videoPlayer && typeof this.videoPlayer.pause === 'function') {
+      this.videoPlayer.pause()
+    }
+  }
+
+  destroy() {
+    if (this.videoPlayer && typeof this.videoPlayer.destroy === 'function') {
+      this.videoPlayer.destroy()
+    }
+
+    this.vimeoReadyUnsubscriber?.()
+  }
+}

@@ -1,76 +1,75 @@
-{% comment %}
-  /**
-   * @param {object} section - section object
-   * @param {object} template - template object
-   * @param {boolean} isModal - using modal template (default: false)
-   * @param {boolean} isAjax - using ajax template (default: false)
-   * @param {object} product - product object
-   * @param {boolean} sku_enable - sku enable
-   * @param {string} image_position - image position
-   * @param {string} image_container_size - image container size
-   * @param {string} product_image_size - product image size
-   * @param {boolean} product_zoom_enable - product zoom enable
-   * @param {string} thumbnail_position - thumbnail position
-   * @param {string} thumbnail_height - thumbnail height
-   * @param {boolean} thumbnail_arrows - thumbnail arrows
-   * @param {string} mobile_layout - mobile layout
-   * @param {boolean} enable_video_looping - enable video looping
-   * @param {string} product_video_style - product video style
-   * @param {string} context - context (default: 'main-product')
-   * @param {boolean} superscript_decimals - whether to superscript decimals
-   * @param {boolean} share_facebook - whether to show facebook share button
-   * @param {boolean} share_twitter - whether to show twitter share button
-   * @param {boolean} share_pinterest - whether to show pinterest share button
-   * @param {boolean} show_breadcrumbs - whether to show breadcrumbs or not
-   * @param {boolean} show_breadcrumbs_collection_link - whether to show the link to the collections page or not
-   * @param {boolean} vendor_enable - whether to show the vendor
-   * @param {boolean} product_save_amount - show save amount
-   * @param {string} product_save_type - dollar or percent
-   */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Main product section
+
+  Accepts:
+  - slot {string} - Content for product info
+  - product_media_gallery {string} - Content for the product media gallery
+  - image_position {string} - Position of the image
+  - mobile_layout {string} - Layout for mobile
+  - image_container_width {string} - Width of the image container
+
+  Usage:
+  {% liquid
+    capture blocks
+      for block in section.blocks
+        case block.type
+          when 'description'
+            render 'block-description', block: block
+        endcase
+      endfor
+    endcapture
+
+    render 'section-main-product', slot: blocks
+  %}
+{%- endcomment -%}
 
 {%- liquid
-  if template == 'product.modal'
-    assign isModal = true
-  endif
-
-  if template == 'product.ajax'
-    assign isAjax = true
-  endif
+  assign image_position = image_position | default: section.settings.image_position | default: 'left'
+  assign mobile_layout = mobile_layout | default: section.settings.mobile_layout | default: 'partial'
+  assign image_container_width = image_container_width | default: section.settings.image_container_size | default: 'medium'
+  assign product_image_width = 'medium-up--one-half'
+  assign product_description_width = 'medium-up--one-half'
+  case image_container_width
+    when 'small'
+      assign product_image_width = 'medium-up--two-fifths'
+      assign product_description_width = 'medium-up--three-fifths'
+    when 'large'
+      assign product_image_width = 'medium-up--three-fifths'
+      assign product_description_width = 'medium-up--two-fifths'
+  endcase
+  capture product_media_gallery_default
+    render 'product-images', sizeVariable: product_image_width
+  endcapture
 -%}
 
-{%- render 'product-template',
-  section: section,
-  product: product,
-  thumbnail_position: thumbnail_position,
-  enableHistory: true,
-  isModal: isModal,
-  isAjax: isAjax,
-  image_container_width: image_container_size,
-  connect_to_sizechart: false,
-  show_breadcrumbs: show_breadcrumbs,
-  show_breadcrumbs_collection_link: show_breadcrumbs_collection_link,
-  vendor_enable: vendor_enable,
-  sku_enable: sku_enable,
-  collections: collections,
-  routes: routes,
-  image_position: image_position,
-  mobile_layout: mobile_layout,
-  section_id: section.id,
-  image_size: product_image_size,
-  product_zoom_enable: product_zoom_enable,
-  thumbnail_arrows: thumbnail_arrows,
-  thumbnail_height: thumbnail_height,
-  video_looping: enable_video_looping,
-  video_style: product_video_style,
-  context: context,
-  shop: shop,
-  product_save_amount: product_save_amount,
-  product_save_type: product_save_type,
-  superscript_decimals: superscript_decimals,
-  share_facebook: share_facebook,
-  share_twitter: share_twitter,
-  share_pinterest: share_pinterest,
-  recommendations: recommendations,
-  hydration: 'on:idle'
--%}
+<section
+  class="page-content page-content--product page-content--{{ mobile_layout }}"
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+>
+  <div class="page-width">
+    <div class="product-grid__container product--images float-grid{% unless image_position == 'left' %} grid--product-images-right{% endunless %}{% if mobile_layout == 'partial' %} grid--product-images--partial{% endif %} clearfix">
+      {%- if image_position == 'left' -%}
+        <div class="grid__item {{ product_image_width }} product-single__sticky">
+          {{- product_media_gallery | default: product_media_gallery_default -}}
+        </div>
+      {%- endif -%}
+      <div class="product-grid__content product--description product-single__sticky grid__item {{ product_description_width }}">
+        <div class="product-single__meta">
+          {%- render 'breadcrumbs' -%}
+          {{- slot -}}
+        </div>
+      </div>
+      {%- unless image_position == 'left' -%}
+        <div class="grid__item {{ product_image_width }} product-single__sticky">
+          {{- product_media_gallery | default: product_media_gallery_default -}}
+        </div>
+      {%- endunless -%}
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+  {{ product | structured_data }}
+</script>

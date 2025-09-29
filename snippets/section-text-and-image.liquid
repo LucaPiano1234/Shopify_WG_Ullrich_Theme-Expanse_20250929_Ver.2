@@ -1,26 +1,58 @@
-{% comment %}
-  /**
-   * @param {object} section - section object
-   * @param {boolean} divider - show divider
-   * @param {number} image_width - image width
-   * @param {object} image - image
-   * @param {object} image2 - image 2
-   * @param {string} image_mask - image mask
-   * @param {string} image2_mask - image 2 mask
-   * @param {boolean} lazyload_images - lazyload images
-   * @param {boolean} top_padding - top padding
-   * @param {boolean} bottom_padding - bottom padding
-   * @param {string} color_scheme - color scheme
-   * @param {string} heading_size - heading size
-   * @param {string} title - title
-   * @param {string} subtitle - subtitle
-   * @param {string} text - text
-   * @param {string} align_text - text alignment
-   * @param {string} button_label - button label
-   * @param {string} button_link - button link
-   * @param {string} layout - layout
-   */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders a section with an image and text.
+
+  Accepts:
+  - subtitle {string} - The subtitle of the section
+  - title {string} - The title of the section
+  - heading_size {'h0'|'h1'|'h2'|'h3'} - The size of the heading
+  - text {string} - The text of the section
+  - button_label {string} - The label of the button
+  - button_link {link} - The link of the button
+  - button_style {'primary'|'secondary'} - The style of the button
+  - align_text {'left'|'center'|'right'} - The alignment of the text
+  - layout {'left'|'right'} - The layout of the section
+  - image_width {string} - The width of the image
+  - image {image} - The image of the section
+  - image_mask {'none'|'portrait'|'landscape'|'square'|'rounded'} - The mask of the image
+  - image2 {image} - The second image of the section
+  - image2_mask {'none'|'portrait'|'landscape'|'square'|'rounded'} - The mask of the second image
+  - show_wave {boolean} - Whether to show the wave background
+  - divider {boolean} - Whether to add a divider above the section
+  - top_padding {boolean} - Whether to add top padding to the section
+  - bottom_padding {boolean} - Whether to add bottom padding to the section
+  - color_scheme {'none'|'1'|'2'|'3'} - The color scheme of the section
+
+  Usage:
+  {% render 'section-text-and-image' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign subtitle = subtitle | default: section.settings.subtitle | default: blank
+  assign title = title | default: section.settings.title
+  assign heading_size = heading_size | default: section.settings.heading_size | default: 'h2'
+  assign text = text | default: section.settings.text
+  assign button_label = button_label | default: section.settings.button_label | default: blank
+  assign button_link = button_link | default: section.settings.button_link
+  assign button_style = button_style | default: section.settings.button_style | default: 'primary'
+  assign align_text = align_text | default: section.settings.align_text | default: 'left'
+  assign layout = layout | default: section.settings.layout | default: 'right'
+  assign image_width = image_width | default: section.settings.image_width | default: '50'
+  assign image = image | default: section.settings.image
+  assign image_mask = image_mask | default: section.settings.image_mask | default: 'none'
+  assign image2 = image2 | default: section.settings.image2
+  assign image2_mask = image2_mask | default: section.settings.image2_mask | default: 'none'
+  assign show_wave = show_wave | default: section.settings.show_wave, allow_false: true | default: false, allow_false: true
+  assign divider = divider | default: section.settings.divider, allow_false: true | default: false, allow_false: true
+  assign top_padding = top_padding | default: section.settings.top_padding, allow_false: true
+  assign bottom_padding = bottom_padding | default: section.settings.bottom_padding, allow_false: true
+  assign color_scheme = color_scheme | default: section.settings.color_scheme | default: 'none'
+
+  assign lazyload_images = true
+  if section.index == 1
+    assign lazyload_images = false
+  endif
+-%}
 
 {%- if divider -%}<div class="section--divider">{%- endif -%}
 
@@ -46,7 +78,7 @@
   {% endif %}
 {% endstyle %}
 
-<div class="index-section color-scheme-{{ color_scheme }}">
+<div class="index-section color-scheme-{{ color_scheme }} {% if show_wave %}background-svg--wave{% endif %}">
   {%- if color_scheme != 'none' -%}
     {%- render 'color-scheme-texture', color_scheme: color_scheme -%}
   {%- endif -%}
@@ -113,12 +145,12 @@
           {%- if image == blank and image2 == blank -%}
             <div class="placeholder-image-wrap">
               <div class="image-wrap">
-                {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- render 'placeholder-svg', name: 'image' -%}
               </div>
             </div>
             <div class="placeholder-image-wrap">
               <div class="image-wrap">
-                {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- render 'placeholder-svg', name: 'image' -%}
               </div>
             </div>
           {%- endif -%}
@@ -138,7 +170,7 @@
           <h2 class="{{ heading_size }}">{{ title | escape }}</h2>
         {%- endif -%}
         {%- if text != blank -%}
-          <div class="rte featured-row__subtext">{{ text }}</div>
+          <div class="rte featured-row__subtext clearfix">{{ text }}</div>
         {%- endif -%}
         {%- if button_label != blank -%}
           <a href="{{ button_link }}" class="btn btn--{{ button_style }}">
@@ -152,7 +184,6 @@
       {%- endif -%}
     </div>
   </div>
-
 </div>
 
 {%- if divider -%}</div>{%- endif -%}

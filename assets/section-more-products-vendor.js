@@ -1,87 +1,65 @@
-// This is the javascript entrypoint for the more-products-vendor section.
-// This file and all its inclusions will be processed through esbuild
-
-import AOS from '@archetype-themes/scripts/helpers/init-AOS';
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/init-observer';
-
+/* components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License */
 class VendorProducts extends HTMLElement {
-  constructor() {
-    super();
-    this.container = this;
-    this.sectionId = this.container.getAttribute('data-section-id');
-    this.currentProduct = this.container.getAttribute('data-product-id');
-    this.maxProducts = parseInt(this.container.getAttribute('data-max-products'), 10);
+  async connectedCallback() {
+    this.outputContainer = this.querySelector(`#VendorProducts-${this.dataset.sectionId}`)
+    let url = `${this.dataset.vendorUrl}&view=vendor-ajax`
 
-    theme.initWhenVisible({
-      element: this.container,
-      callback: this.init.bind(this),
-      threshold: 600
-    });
+    // Remove double `/` in case the shop might have `/en` or language in URL
+    url = url.replace('//', '/')
 
-    document.dispatchEvent(new CustomEvent('more-products-vendor:loaded', {
-      detail: {
-        sectionId: this.sectionId
-      }
-    }));
+    try {
+      const response = await fetch(url)
+      const text = await response.text()
+
+      this.processProducts(text)
+    } catch (error) {
+      console.error('Error fetching vendor products:', error)
+    }
   }
 
-  init() {
-    this.outputContainer = this.container.querySelector(`#VendorProducts-${this.sectionId}`);
-    this.vendor = this.container.getAttribute('data-vendor');
-    let url = `${theme.routes.collections}/vendors?view=vendor-ajax&q=${this.vendor}`;
+  processProducts(html) {
+    let count = 0
+    const products = []
+    const modals = []
+    const element = document.createElement('div')
 
-    // remove double `/` in case shop might have /en or language in URL
-    url = url.replace('//', '/');
+    element.innerHTML = html
 
-    fetch(url)
-      .then(response => response.text())
-      .then(text => {
-        let count = 0;
-        const products = [];
-        const modals = [];
-        const html = document.createElement('div');
+    const allProds = element.querySelectorAll('.grid-product')
 
-        html.innerHTML = text;
+    allProds.forEach((el) => {
+      const id = el.firstElementChild.dataset.productId
 
-        const allProds = html.querySelectorAll('.grid-product');
+      if (count === parseInt(this.dataset.maxProducts, 10)) return
+      if (id === this.dataset.productId) return
 
-      // Do not add current product to output
-        allProds.forEach(el => {
-          const id = el.dataset.productId;
+      const modal = element.querySelector(`.modal[data-product-id="${id}"]`)
 
-          if (count === this.maxProducts) return;
+      if (modal) {
+        modals.push(modal)
+      }
 
-          if (id === this.currentProduct) return;
+      count++
+      products.push(el)
+    })
 
-          const modal = html.querySelector('.modal[data-product-id="'+ id +'"]');
-          if (modal) {
-            modals.push(modal);
-          }
+    this.updateOutputContainer(products, modals)
+  }
 
-          count++;
-          // Add the product's island to the products array
-          products.push(el.parentElement);
-        });
+  updateOutputContainer(products, modals) {
+    this.outputContainer.innerHTML = ''
 
-        this.outputContainer.innerHTML = '';
+    if (products.length === 0) {
+      this.classList.add('hide')
+    } else {
+      this.classList.remove('hide')
+      this.outputContainer.append(...products)
 
-        if (products.length === 0) {
-          this.container.classList.add('hide');
-        } else {
-          this.outputContainer.classList.remove('hide');
-          this.outputContainer.append(...products);
-
-          if (modals.length) {
-            this.outputContainer.append(...modals);
-          }
-
-          AOS.refreshHard();
-        }
-      }).catch(e => {
-        console.error(e);
-      });
+      if (modals.length) {
+        this.outputContainer.append(...modals)
+      }
+    }
   }
 }
 
-customElements.define('vendor-products', VendorProducts);
+customElements.define('vendor-products', VendorProducts)

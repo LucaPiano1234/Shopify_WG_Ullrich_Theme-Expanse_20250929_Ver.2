@@ -1,50 +1,44 @@
-{% render 'section-rich-text',
-  section: section,
-  divider: section.settings.divider,
-  color_scheme: section.settings.color_scheme,
-  align_text: section.settings.align_text,
-  narrow_column: section.settings.narrow_column
-%}
+{%- render 'section-rich-text' -%}
 
 {% schema %}
 {
-  "name": "t:sections.rich-text.name",
+  "name": "t:labels.rich_text",
   "settings": [
     {
       "type": "select",
       "id": "align_text",
-      "label": "t:sections.rich-text.settings.align_text.label",
+      "label": "t:labels.content_alignment",
       "default": "center",
       "options": [
         {
           "value": "left",
-          "label": "t:sections.rich-text.settings.align_text.options.left.label"
+          "label": "t:labels.alignments.left"
         },
         {
           "value": "center",
-          "label": "t:sections.rich-text.settings.align_text.options.center.label"
+          "label": "t:labels.alignments.centered"
         },
         {
           "value": "right",
-          "label": "t:sections.rich-text.settings.align_text.options.right.label"
+          "label": "t:labels.alignments.right"
         }
       ]
     },
     {
       "type": "checkbox",
       "id": "narrow_column",
-      "label": "t:sections.rich-text.settings.narrow_column.label",
+      "label": "t:labels.narrow_column",
       "default": true
     },
     {
       "type": "select",
       "id": "color_scheme",
-      "label": "t:sections.rich-text.settings.color_scheme.label",
+      "label": "t:labels.color_scheme",
       "default": "1",
       "options": [
         {
           "value": "none",
-          "label": "t:sections.rich-text.settings.color_scheme.options.none.label"
+          "label": "t:labels.none"
         },
         {
           "value": "1",
@@ -63,42 +57,42 @@
     {
       "type": "checkbox",
       "id": "divider",
-      "label": "t:sections.rich-text.settings.divider.label",
+      "label": "t:actions.show_section_divider",
       "default": false
     }
   ],
   "blocks": [
     {
       "type": "heading",
-      "name": "t:sections.rich-text.blocks.heading.name",
+      "name": "t:labels.heading",
       "settings": [
         {
           "type": "text",
           "id": "title",
-          "label": "t:sections.rich-text.blocks.heading.settings.title.label",
+          "label": "t:labels.heading",
           "default": "Rich text"
         },
         {
           "type": "select",
           "id": "heading_size",
-          "label": "t:common.heading_size.label",
+          "label": "t:labels.heading_size",
           "default": "h2",
           "options": [
             {
               "value": "h3",
-              "label": "t:common.heading_size.options.small.label"
+              "label": "t:labels.sizes.small"
             },
             {
               "value": "h2",
-              "label": "t:common.heading_size.options.medium.label"
+              "label": "t:labels.sizes.medium"
             },
             {
               "value": "h1",
-              "label": "t:common.heading_size.options.large.label"
+              "label": "t:labels.sizes.large"
             },
             {
               "value": "h0",
-              "label": "t:common.heading_size.options.extra_large.label"
+              "label": "t:labels.sizes.extra_large"
             }
           ]
         }
@@ -106,54 +100,54 @@
     },
     {
       "type": "text",
-      "name": "t:sections.rich-text.blocks.text.name",
+      "name": "t:labels.text",
       "settings": [
         {
           "type": "checkbox",
           "id": "enlarge_text",
-          "label": "t:sections.rich-text.blocks.text.settings.enlarge_text.label",
+          "label": "t:actions.enlarge_text",
           "default": true
         },
         {
           "id": "text",
           "type": "richtext",
-          "label": "t:sections.rich-text.blocks.text.settings.text.label",
+          "label": "t:labels.text",
           "default": "<p>Use this text to share information about your brand with your customers. Describe a product, share announcements, or welcome customers to your store.</p>"
         }
       ]
     },
     {
       "type": "button",
-      "name": "t:sections.rich-text.blocks.button.name",
+      "name": "t:labels.button",
       "settings": [
         {
           "type": "url",
           "id": "link",
-          "label": "t:sections.rich-text.blocks.button.settings.link.label"
+          "label": "t:labels.button_link"
         },
         {
           "type": "text",
           "id": "link_text",
-          "label": "t:sections.rich-text.blocks.button.settings.link_text.label",
+          "label": "t:labels.button_text",
           "default": "Button"
         }
       ]
     },
     {
       "type": "page",
-      "name": "t:sections.rich-text.blocks.page.name",
+      "name": "t:labels.page",
       "settings": [
         {
           "id": "page_text",
           "type": "page",
-          "label": "t:sections.rich-text.blocks.page.settings.page_text.label"
+          "label": "t:labels.page"
         }
       ]
     }
   ],
   "presets": [
     {
-      "name": "t:sections.rich-text.presets.rich_text.name",
+      "name": "t:labels.rich_text",
       "blocks": [
         {
           "type": "heading"

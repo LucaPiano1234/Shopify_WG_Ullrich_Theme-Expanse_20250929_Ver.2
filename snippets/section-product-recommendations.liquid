@@ -1,28 +1,22 @@
-{% comment %}
-  /**
-   * @param {object} section - section object
-   * @param {number} related_count - number of related products to show
-   * @param {number} products_per_row - number of products per row
-   * @param {string} product_recommendations_heading - heading for the related products section
-   * @param {object} recommendations - recommendations object
-   * @param {object} product - product object
-   * @param {object} routes - routes object
-   * @param {boolean} quick_add_enable - whether quick add is enabled
-   * @param {boolean} quick_shop_enable - whether quick shop is enabled
-   * @param {string} product_grid_image_size - the image size to use for the grid item
-   * @param {boolean} product_grid_image_fill - whether the image should fill the grid item
-   * @param {boolean} product_hover_image - whether second image will be shown on hover
-   * @param {boolean} enable_swatches - whether swatches are enabled
-   * @param {boolean} vendor_enable - whether to show the vendor
-   * @param {boolean} product_save_amount - show save amount
-   * @param {string} product_save_type - dollar or percent
-   * @param {boolean} enable_product_reviews - whether to show product reviews
-   * @param {boolean} superscript_decimals - whether to superscript decimals
-   * @param {string} [hydration] - hydration mode - (default: 'on:idle')
-   */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders a section that shows related products for a given product.
+
+  Accepts:
+  - product_recommendations_heading {string} - The heading for the related products section
+  - products_per_row {2-5} - The number of products per row
+  - related_count {2-16} - The number of related products to show
+
+  Usage:
+  {% render 'section-product-recommendations' %}
+{%- endcomment -%}
 
 {%- liquid
+  assign product_recommendations_heading = product_recommendations_heading | default: section.settings.product_recommendations_heading
+  assign products_per_row = products_per_row | default: section.settings.products_per_row | default: 3
+  assign related_count = related_count | default: section.settings.related_count | default: 6
+  assign hydration = hydration | default: 'on:visible'
+
   assign recommend_products = true
 
   if recommendations.products and recommendations.products_count > 0
@@ -30,12 +24,6 @@
   endif
 
   assign number_of_products = related_count
-
-  capture gridView
-    render 'products-per-row', products_per_row: products_per_row
-  endcapture
-
-  assign hydration = hydration | default: 'on:idle'
 -%}
 
 <is-land {{ hydration }}>
@@ -48,13 +36,14 @@
     data-product-id="{{ product.id }}"
     data-intent="related"
     data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ number_of_products }}"
-    data-limit="{{ number_of_products }}">
-
+    data-limit="{{ number_of_products }}"
+  >
     <div
       data-section-id="{{ product.id }}"
       data-subsection
       data-section-type="collection-template"
-      class="index-section index-section--sub-product">
+      class="index-section index-section--sub-product"
+    >
       <div class="page-width">
         <header class="section-header">
           <div class="h3 section-header__title">
@@ -70,47 +59,21 @@
               This content is visually hidden and replaced when recommended
               products show up
             {% endcomment %}
-            <div class="new-grid product-grid scrollable-grid--small visually-invisible" aria-hidden="true" data-view="scrollable">
-              {%- render 'product-grid-item',
-                product: product,
-                no_actions: true,
-                collection: collection,
-                quick_add_enable: quick_add_enable,
-                quick_shop_enable: quick_shop_enable,
-                product_grid_image_size: product_grid_image_size,
-                product_grid_image_fill: product_grid_image_fill,
-                product_hover_image: product_hover_image,
-                enable_swatches: enable_swatches,
-                vendor_enable: vendor_enable,
-                product_save_amount: product_save_amount,
-                product_save_type: product_save_type,
-                enable_product_reviews: enable_product_reviews,
-                superscript_decimals: superscript_decimals,
-              -%}
+            <div
+              class="new-grid product-grid scrollable-grid--small visually-invisible"
+              aria-hidden="true"
+              data-view="scrollable"
+            >
+              {%- render 'product-grid-item', product: product -%}
             </div>
           </div>
         {%- endif -%}
+
         {%- if related_collection.products_count > 0 -%}
           <div class="product-recommendations page-width">
-            <div class="new-grid product-grid scrollable-grid--small" data-view="{{ gridView }}">
+            <div class="new-grid product-grid scrollable-grid--small" {%- render 'grid-view-type' -%}>
               {%- for product in related_collection.products -%}
-                {%- render 'product-grid-item',
-                  product: product,
-                  sizeVariable: products_per_row,
-                  fallback: '45vw',
-                  collection: collection,
-                  quick_add_enable: quick_add_enable,
-                  quick_shop_enable: quick_shop_enable,
-                  product_grid_image_size: product_grid_image_size,
-                  product_grid_image_fill: product_grid_image_fill,
-                  product_hover_image: product_hover_image,
-                  enable_swatches: enable_swatches,
-                  vendor_enable: vendor_enable,
-                  product_save_amount: product_save_amount,
-                  product_save_type: product_save_type,
-                  enable_product_reviews: enable_product_reviews,
-                  superscript_decimals: superscript_decimals,
-                -%}
+                {%- render 'product-grid-item', product: product, sizeVariable: products_per_row, fallback: '45vw' -%}
               {%- endfor -%}
             </div>
           </div>
@@ -121,7 +84,7 @@
 
   <template data-island>
     <script type="module">
-      import 'components/section-product-recommendations';
+      import '@archetype-themes/custom-elements/product-recommendations'
     </script>
   </template>
 </is-land>

@@ -1,16 +1,33 @@
-{% comment %}
-  /**
-   * @param {object} section - section object
-   * @param {boolean} divider - show divider
-   * @param {string} title - title
-   * @param {string} align_text - text alignment
-   * @param {number} desktop_columns_per_row - columns per row on desktop
-   * @param {string} button_label - button label
-   * @param {string} button_link - button link
-   * @param {string} icon_color - Color of icons
-   * @param {number} icon_weight - weight of icons
-   */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders the text with icons section.
+
+  Accepts:
+  - divider {boolean} - Whether to show a divider
+  - title {string} - The title of the section
+  - align_text {'left'|'center'|'right'} - The alignment of the text
+  - heading_size {'h0'|'h1'|'h2'|'h3'} - The size of the heading
+  - button_label {string} - The label of the button
+  - button_link {string} - The link of the button
+  - icon_color {color} - The color of the icons
+  - icon_weight {string} - The weight of the icons
+  - desktop_columns_per_row {number} - The number of columns per row on desktop
+
+  Usage:
+  {% render 'section-text-with-icons' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign divider = divider | default: section.settings.divider, allow_false: true | default: false, allow_false: true
+  assign title = title | default: section.settings.title | default: blank
+  assign align_text = align_text | default: section.settings.align_text | default: 'center'
+  assign heading_size = heading_size | default: section.settings.heading_size | default: 'h2'
+  assign button_label = button_label | default: section.settings.button_label | default: blank
+  assign button_link = button_link | default: section.settings.button_link | default: blank
+  assign icon_color = icon_color | default: section.settings.icon_color | default: '#000'
+  assign icon_weight = icon_weight | default: settings.icon_weight | default: '5px'
+  assign desktop_columns_per_row = desktop_columns_per_row | default: section.settings.desktop_columns_per_row | default: 3
+-%}
 
 {%- if divider -%}<div class="section--divider">{%- endif -%}
 
@@ -24,66 +41,23 @@
       <div
         class="
           text-with-icons__title
-          section-header"
+          section-header
+        "
       >
-        <h2 class="text-{{ align_text }}">{{ title }}</h2>
+        <h2 class="text-{{ align_text }} {% if heading_size %}{{ heading_size }}{% endif %}">{{ title | escape }}</h2>
       </div>
     {%- endif -%}
     <div
       class="
         text-with-icons__blocks
-        has-{{ desktop_columns_per_row }}-per-row"
+        has-{{ desktop_columns_per_row }}-per-row
+      "
       data-block-count="{{ section.blocks.size }}"
-      >
+    >
       {% for block in section.blocks %}
         <div class="text-with-icons__block text-{{ align_text }}" {{ block.shopify_attributes }}>
           <div class="text-with-icons__block-icon">
-            {% case block.settings.icon %}
-              {% when 'bills'%}
-                {% render 'icon-tcwi-bills' %}
-              {% when 'calendar'%}
-                {% render 'icon-tcwi-calendar' %}
-              {% when 'cart'%}
-                {% render 'icon-tcwi-cart' %}
-              {% when 'charity'%}
-                {% render 'icon-tcwi-charity' %}
-              {% when 'chat'%}
-                {% render 'icon-tcwi-chat' %}
-              {% when 'envelope'%}
-                {% render 'icon-tcwi-open-envelope' %}
-              {% when 'gears'%}
-                {% render 'icon-tcwi-gears' %}
-              {% when 'gift'%}
-                {% render 'icon-tcwi-gift' %}
-              {% when 'globe'%}
-                {% render 'icon-tcwi-globe' %}
-              {% when 'package'%}
-                {% render 'icon-tcwi-package' %}
-              {% when 'phone'%}
-                {% render 'icon-tcwi-phone' %}
-              {% when 'plant'%}
-                {% render 'icon-tcwi-plant' %}
-              {% when 'recycle'%}
-                {% render 'icon-tcwi-recycle' %}
-              {% when 'ribbon'%}
-                {% render 'icon-tcwi-ribbon' %}
-              {% when 'sales-tag'%}
-                {% render 'icon-tcwi-sales-tag' %}
-              {% when 'shield'%}
-                {% render 'icon-tcwi-shield' %}
-              {% when 'stopwatch'%}
-                {% render 'icon-tcwi-stopwatch' %}
-              {% when 'store'%}
-                {% render 'icon-tcwi-store' %}
-              {% when 'thumbs-up'%}
-                {% render 'icon-tcwi-thumbs-up' %}
-              {% when 'trophy'%}
-                {% render 'icon-tcwi-trophy' %}
-              {% when 'truck'%}
-                {% render 'icon-tcwi-truck' %}
-              {% when 'wallet'%}
-                {% render 'icon-tcwi-wallet' %}
-            {% endcase %}
+            {% render 'icon', name: block.settings.icon, library: 'tcwi' %}
           </div>
           <div class="text-with-icons__block-title">
             <h3>{{ block.settings.title }}</h3>
@@ -94,6 +68,7 @@
         </div>
       {% endfor %}
     </div>
+
     {%- if button_label != blank -%}
       <div class="text-with-icons__button">
         <a href="{{ button_link }}" class="btn btn--secondary">
@@ -122,4 +97,3 @@
     stroke-width: {{ icon_weight | replace: 'px', '' | minus: 1 }}px;
   }
 {% endstyle %}
-

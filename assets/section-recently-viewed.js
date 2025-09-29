@@ -1,119 +1,104 @@
-// This is the javascript entrypoint for the recently-viewed section.
-// This file and all its inclusions will be processed through esbuild
+import { hasLocalStorage } from '@archetype-themes/utils/storage'
 
-import AOS from '@archetype-themes/scripts/helpers/init-AOS';
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/init-observer';
+let recentlyViewedIds = []
 
-theme.recentlyViewedIds = [];
+if (hasLocalStorage()) {
+  const recentIds = localStorage.getItem('recently-viewed')
 
-if (theme.config.hasLocalStorage) {
-  const recentIds = window.localStorage.getItem("recently-viewed");
   if (recentIds && typeof recentIds !== undefined) {
-    theme.recentlyViewedIds = JSON.parse(recentIds);
+    recentlyViewedIds = JSON.parse(recentIds)
   }
 }
 
 class RecentlyViewed extends HTMLElement {
   constructor() {
-    super();
+    super()
 
-    this.initialized = false;
-    this.container = this;
-    this.sectionId = this.container.getAttribute('data-section-id');
-    this.maxProducts = this.container.getAttribute('data-max-products');
+    this.initialized = false
+    this.sectionId = this.getAttribute('data-section-id')
+    this.maxProducts = this.getAttribute('data-max-products')
 
-    theme.initWhenVisible({
-      element: this.container,
-      callback: this.init.bind(this),
-      threshold: 600
-    });
-
-    document.dispatchEvent(new CustomEvent('recently-viewed:loaded', {
-      detail: {
-        sectionId: this.sectionId
-      }
-    }));
+    this.init()
   }
 
-  static addIdToRecentlyViewed(id) {
-    if (!id) return;
+  addIdToRecentlyViewed(id) {
+    if (!id) return
 
     // Remove current product if already in recently viewed array
-    if (theme.recentlyViewedIds.includes(id)) {
-      theme.recentlyViewedIds.splice(theme.recentlyViewedIds.indexOf(id), 1);
+    if (recentlyViewedIds.includes(id)) {
+      recentlyViewedIds.splice(recentlyViewedIds.indexOf(id), 1)
     }
 
     // Add id to array
-    theme.recentlyViewedIds.unshift(id);
+    recentlyViewedIds.unshift(id)
 
-    if (theme.config.hasLocalStorage) {
-      window.localStorage.setItem('recently-viewed', JSON.stringify(theme.recentlyViewedIds));
+    if (hasLocalStorage()) {
+      localStorage.setItem('recently-viewed', JSON.stringify(recentlyViewedIds))
     }
   }
 
   init() {
+    // Add current product to recently viewed
+    this.addIdToRecentlyViewed(this.dataset.productId)
+
     if (this.initialized) {
-      return;
+      return
     }
 
-    this.initialized = true;
+    this.initialized = true
 
     // Stop if no data
-    if (!theme.recentlyViewedIds.length) {
-      this.container.classList.add('hide');
-      return;
+    if (!recentlyViewedIds.length) {
+      this.classList.add('hide')
+      return
     }
 
-    this.outputContainer = this.container.querySelector(`#RecentlyViewed-${this.sectionId}`);
-    const currentId = this.container.getAttribute('data-product-id');
+    this.outputContainer = this.querySelector(`#RecentlyViewed-${this.sectionId}`)
+    const currentId = this.getAttribute('data-product-id')
 
-    let url = `${theme.routes.search}?view=recently-viewed&type=product&q=`;
+    let url = `${window.Shopify.routes.root}search?view=recently-viewed&type=product&q=`
 
-    let products = '';
-    let i = 0;
-    theme.recentlyViewedIds.forEach((val) => {
+    let products = ''
+    let i = 0
+    recentlyViewedIds.forEach((val) => {
       // Skip current product
       if (val === currentId) {
-        return;
+        return
       }
 
       // Stop at max
       if (i >= this.maxProducts) {
-        return;
+        return
       }
 
-      products += `id:${val} OR `;
-      i++;
-    });
+      products += `id:${val} OR `
+      i++
+    })
 
-    url = url + encodeURIComponent(products);
+    url = url + encodeURIComponent(products)
 
     fetch(url)
-    .then(response => response.text())
-    .then(text => {
-      const html = document.createElement('div');
-      html.innerHTML = text;
-      const count = html.querySelectorAll('.grid-product').length;
+      .then((response) => response.text())
+      .then((text) => {
+        const html = document.createElement('div')
+        html.innerHTML = text
+        const count = html.querySelectorAll('.grid-product').length
 
-      if (count > 0) {
-        const results = html.querySelector('.product-grid');
-        this.outputContainer.append(results);
-
-        AOS.refreshHard();
-      } else {
-        this.container.classList.add('hide');
-      }
-    }).catch(e => {
-      console.error(e);
-    });
+        if (count > 0) {
+          const results = html.querySelector('.product-grid')
+          this.outputContainer.append(results)
+        } else {
+          this.classList.add('hide')
+        }
+      })
+      .catch((e) => {
+        console.error(e)
+      })
   }
 
   disconnectedCallback() {
-    this.initialized = false;
+    this.initialized = false
   }
 }
 
-customElements.define('recently-viewed', RecentlyViewed);
-
-export { RecentlyViewed };
+customElements.define('recently-viewed', RecentlyViewed)

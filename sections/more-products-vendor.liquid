@@ -1,34 +1,17 @@
-{%- render 'section-more-products-vendor',
-    section: section,
-    product: product,
-    products_per_row: section.settings.products_per_row,
-    max_products: section.settings.max_products,
-    quick_add_enable: settings.quick_add_enable,
-    quick_shop_enable: settings.quick_shop_enable,
-    product_grid_image_size: settings.product_grid_image_size,
-    product_grid_image_fill: settings.product_grid_image_fill,
-    product_hover_image: settings.product_hover_image,
-    enable_swatches: settings.enable_swatches,
-    vendor_enable: settings.vendor_enable,
-    product_save_amount: settings.product_save_amount,
-    product_save_type: settings.product_save_type,
-    enable_product_reviews: settings.enable_product_reviews,
-    superscript_decimals: settings.superscript_decimals,
-    hydration: 'on:visible'
--%}
+{%- render 'section-more-products-vendor' -%}
 
 {% schema %}
 {
-  "name": "t:sections.more-products-vendor.name",
+  "name": "t:labels.more_from_vendor",
   "settings": [
     {
       "type": "paragraph",
-      "content": "t:sections.more-products-vendor.settings.content"
+      "content": "t:labels.more_from_vendor"
     },
     {
       "type": "range",
       "id": "products_per_row",
-      "label": "t:sections.more-products-vendor.settings.products_per_row.label",
+      "label": "t:labels.desktop_products_per",
       "default": 3,
       "min": 2,
       "max": 5,
@@ -37,7 +20,7 @@
     {
       "type": "range",
       "id": "max_products",
-      "label": "t:common.products.max_products.label",
+      "label": "t:labels.maximum_products_to",
       "default": 5,
       "min": 2,
       "max": 10,

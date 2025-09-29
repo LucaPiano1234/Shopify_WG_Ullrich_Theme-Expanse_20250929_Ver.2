@@ -1,115 +1,150 @@
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/utils';
-import '@archetype-themes/scripts/helpers/delegate';
+import { prepareTransition, debounce } from '@archetype-themes/utils/utils'
+import { EVENTS } from '@archetype-themes/utils/events'
 
-theme.headerNav = (function() {
-  var selectors = {
-    wrapper: '#HeaderWrapper',
-    siteHeader: '#SiteHeader',
-    megamenu: '.megamenu',
-    navigation: '.site-navigation',
-    navItems: '.site-nav__item',
-    navLinks: '.site-nav__link',
-    navLinksWithDropdown: '.site-nav__link--has-dropdown',
-    navDropdownLinks: '.site-nav__dropdown-link--second-level',
-    triggerCollapsedMenu: '.site-nav__compress-menu',
-    collapsedMenu: '[data-type="nav"]',
-    bottomSearch: '[data-type="search"]',
-    navDetails: '.site-nav__details',
-  };
+let selectors = {
+  wrapper: '#HeaderWrapper',
+  siteHeader: '#SiteHeader',
+  megamenu: '.megamenu',
+  triggerCollapsedMenu: '.site-nav__compress-menu',
+  collapsedMenu: '[data-type="nav"]',
+  bottomSearch: '[data-type="search"]',
+  navDetails: '.site-nav__details'
+}
 
-  var classes = {
-    hasDropdownClass: 'site-nav--has-dropdown',
-    hasSubDropdownClass: 'site-nav__deep-dropdown-trigger',
-    dropdownActive: 'is-focused',
-    headerCompressed: 'header-wrapper--compressed',
-    overlay: 'header-wrapper--overlay',
-    overlayStyle: 'is-light'
-  };
+let classes = {
+  headerCompressed: 'header-wrapper--compressed',
+  overlay: 'header-wrapper--overlay',
+  overlayStyle: 'is-light'
+}
 
-  var config = {
-    namespace: '.siteNav',
-    wrapperOverlayed: false,
-    stickyEnabled: false,
-    stickyActive: false,
-    subarPositionInit: false,
-    threshold: 0
-  };
+let config = {
+  wrapperOverlayed: false,
+  stickyEnabled: false,
+  stickyActive: false,
+  subarPositionInit: false,
+  threshold: 0
+}
 
-  // Elements used in resize functions, defined in init
-  var wrapper;
-  var siteHeader;
-  var bottomNav;
-  var bottomSearch;
+// Elements used in resize functions, defined in init
+let wrapper
+let siteHeader
+let bottomNav
+let bottomSearch
 
-  function init() {
-    wrapper = document.querySelector(selectors.wrapper);
-    siteHeader = document.querySelector(selectors.siteHeader);
-    bottomNav = wrapper.querySelector(selectors.collapsedMenu);
-    bottomSearch = wrapper.querySelector(selectors.bottomSearch);
+class HeaderNav extends HTMLElement {
+  connectedCallback() {
+    this.abortController = new AbortController()
+
+    wrapper = document.querySelector(selectors.wrapper)
+    siteHeader = document.querySelector(selectors.siteHeader)
+    bottomNav = wrapper.querySelector(selectors.collapsedMenu)
+    bottomSearch = wrapper.querySelector(selectors.bottomSearch)
+    this.isStickyHeader = false
 
     // Trigger collapsed state at top of header
-    config.threshold = wrapper.getBoundingClientRect().top;
+    config.threshold = wrapper.getBoundingClientRect().bottom
 
-    config.subarPositionInit = false;
-    config.stickyEnabled = (siteHeader.dataset.sticky === 'true');
+    config.subarPositionInit = false
+    config.stickyEnabled = siteHeader.dataset.sticky === 'true'
+
     if (config.stickyEnabled) {
-      config.wrapperOverlayed = wrapper.classList.contains(classes.overlayStyle);
-      stickyHeaderCheck();
+      config.wrapperOverlayed = wrapper.classList.contains(classes.overlayStyle)
+      this.stickyHeaderCheck()
     } else {
-      disableSticky();
+      this.disableSticky()
     }
 
-    theme.settings.overlayHeader = (siteHeader.dataset.overlay === 'true');
+    this.overlayHeader = siteHeader.dataset.overlay === 'true'
+
     // Disable overlay header if on collection template with no collection image
-    if (theme.settings.overlayHeader && Shopify && Shopify.designMode) {
+    if (this.overlayHeader && Shopify && Shopify.designMode) {
       if (document.body.classList.contains('template-collection') && !document.querySelector('.collection-hero')) {
-        this.disableOverlayHeader();
+        this.disableOverlayHeader()
       }
     }
 
+    this.initOverlayHeaderAdmin()
+
     // Position menu and search bars absolutely, offsetting their height
     // with an invisible div to prevent reflows
-    setAbsoluteBottom();
-    window.on('resize' + config.namespace, theme.utils.debounce(250, setAbsoluteBottom));
+    this.setAbsoluteBottom()
+    window.addEventListener('resize', debounce(250, this.setAbsoluteBottom), { signal: this.abortController.signal })
 
-    var collapsedNavTrigger = wrapper.querySelector(selectors.triggerCollapsedMenu);
-    if (collapsedNavTrigger) {
-      collapsedNavTrigger.on('click', function() {
-        collapsedNavTrigger.classList.toggle('is-active');
-        theme.utils.prepareTransition(bottomNav, function() {
-          bottomNav.classList.toggle('is-active');
-        });
-      });
+    let collapsedNavTrigger = wrapper.querySelector(selectors.triggerCollapsedMenu)
+    if (collapsedNavTrigger && !collapsedNavTrigger.classList.contains('nav-trigger--initialized')) {
+      collapsedNavTrigger.classList.add('nav-trigger--initialized')
+      collapsedNavTrigger.addEventListener(
+        'click',
+        function (e) {
+          collapsedNavTrigger.classList.toggle('is-active')
+          prepareTransition(bottomNav, function () {
+            bottomNav.classList.toggle('is-active')
+          })
+        },
+        { signal: this.abortController.signal }
+      )
     }
 
-    menuDetailsHandler();
+    // Subscribe to sticky header check
+    document.addEventListener(EVENTS.headerStickyCheck, this.stickyHeaderCheck.bind(this), {
+      signal: this.abortController.signal
+    })
+
+    // Subscribe to overlay header disable
+    document.addEventListener(EVENTS.headerOverlayDisable, this.disableOverlayHeader, {
+      signal: this.abortController.signal
+    })
+
+    // Subscribe to overlay header remove class
+    document.addEventListener(EVENTS.headerOverlayRemoveClass, this.removeOverlayClass, {
+      signal: this.abortController.signal
+    })
+
+    // Subscribe to drawer size
+    document.addEventListener(EVENTS.sizeDrawer, this.sizeDrawer.bind(this), { signal: this.abortController.signal })
+  }
+
+  disconnectedCallback() {
+    this.abortController.abort()
+  }
+
+  initOverlayHeaderAdmin() {
+    if (!Shopify.designMode) {
+      return
+    }
+    const section = this.closest('.shopify-section-group-header-group')
+    const index = Array.from(section.parentElement.children).indexOf(section) + 1
+    if (index === 2 && this.overlayHeader) {
+      siteHeader.setAttribute('data-section-index', index)
+      config.wrapperOverlayed = true
+      this.classList.add(classes.overlay, classes.overlayStyle)
+    }
   }
 
   // Measure sub menu bar, set site header's bottom padding to it.
   // Set sub bars as absolute to avoid page jumping on collapsed state change.
-  function setAbsoluteBottom() {
-    if (theme.settings.overlayHeader) {
+  setAbsoluteBottom() {
+    if (this.overlayHeader) {
       document.querySelector('.header-section').classList.add('header-section--overlay')
     }
 
-    var activeSubBar = theme.config.bpSmall ?
-                        document.querySelector('.site-header__element--sub[data-type="search"]') :
-                        document.querySelector('.site-header__element--sub[data-type="nav"]');
+    let activeSubBar = matchMedia('(max-width: 768px)').matches
+      ? document.querySelector('.site-header__element--sub[data-type="search"]')
+      : document.querySelector('.site-header__element--sub[data-type="nav"]')
 
     if (activeSubBar) {
-      var h = activeSubBar.offsetHeight;
+      let h = activeSubBar.offsetHeight
       // If height is 0, it was measured when hidden so ignore it.
       // Very likely it's on mobile when the address bar is being
       // hidden and triggers a resize
       if (h !== 0) {
-        document.documentElement.style.setProperty('--header-padding-bottom', h + 'px');
+        document.documentElement.style.setProperty('--header-padding-bottom', h + 'px')
       }
 
       // If not setup before, set active class on wrapper so subbars become absolute
       if (!config.subarPositionInit) {
-        wrapper.classList.add('header-wrapper--init');
-        config.subarPositionInit = true;
+        wrapper.classList.add('header-wrapper--init')
+        config.subarPositionInit = true
       }
     }
   }
@@ -117,146 +152,140 @@ theme.headerNav = (function() {
   // If the header setting to overlay the menu on the collection image
   // is enabled but the collection setting is disabled, we need to undo
   // the init of the sticky nav
-  function disableOverlayHeader() {
-    wrapper.classList.remove(config.overlayEnabledClass, classes.overlayStyle);
-    config.wrapperOverlayed = false;
-    theme.settings.overlayHeader = false;
+  disableOverlayHeader() {
+    wrapper.classList.remove(config.overlayEnabledClass, classes.overlayStyle)
+    config.wrapperOverlayed = false
+
+    document.dispatchEvent(
+      new CustomEvent(EVENTS.overlayHeaderChange, {
+        detail: {
+          overlayHeader: false
+        }
+      })
+    )
   }
 
-  function stickyHeaderCheck() {
+  stickyHeaderCheck() {
     // Disable sticky header if any mega menu is taller than window
-    theme.config.stickyHeader = doesMegaMenuFit();
+    this.isStickyHeader = this.doesMegaMenuFit()
 
-    if (theme.config.stickyHeader) {
-      config.forceStopSticky = false;
-      stickyHeader();
+    if (this.isStickyHeader) {
+      config.forceStopSticky = false
+      this.stickyHeader()
+      document.dispatchEvent(new CustomEvent(EVENTS.stickyHeaderChange, { detail: { isSticky: true } }))
     } else {
-      config.forceStopSticky = true;
-      disableSticky();
+      config.forceStopSticky = true
+      this.disableSticky()
+      document.dispatchEvent(new CustomEvent(EVENTS.stickyHeaderChange, { detail: { isSticky: false } }))
     }
   }
 
-  function disableSticky() {
-    document.querySelector('.header-section').style.position = 'relative';
+  disableSticky() {
+    document.querySelector('.header-section').style.position = 'relative'
   }
 
-  function removeOverlayClass() {
+  removeOverlayClass() {
     if (config.wrapperOverlayed) {
-      wrapper.classList.remove(classes.overlayStyle);
+      wrapper.classList.remove(classes.overlayStyle)
     }
   }
 
-  function doesMegaMenuFit() {
-    var largestMegaNav = 0;
-    siteHeader.querySelectorAll(selectors.megamenu).forEach(nav => {
-      var h = nav.offsetHeight;
+  doesMegaMenuFit() {
+    let largestMegaNav = 0
+    const header = siteHeader || document.querySelector(selectors.siteHeader)
+    header.querySelectorAll(selectors.megamenu).forEach((nav) => {
+      let h = nav.offsetHeight
       if (h > largestMegaNav) {
-        largestMegaNav = h;
+        largestMegaNav = h
       }
-    });
+    })
 
     // 120 ~ space of visible header when megamenu open
-    if (window.innerHeight < (largestMegaNav + 120)) {
-      return false;
+    if (window.innerHeight < largestMegaNav + 120) {
+      return false
     }
 
-    return true;
+    return true
   }
 
-  function stickyHeader() {
+  stickyHeader() {
     if (window.scrollY > config.threshold) {
-      stickyHeaderScroll();
+      this.stickyHeaderScroll()
     }
 
-    window.on('scroll' + config.namespace, stickyHeaderScroll);
+    window.addEventListener('scroll', this.stickyHeaderScroll.bind(this), { signal: this.abortController.signal })
   }
 
-  function stickyHeaderScroll() {
+  stickyHeaderScroll() {
     if (!config.stickyEnabled) {
-      return;
+      return
     }
 
     if (config.forceStopSticky) {
-      return;
+      return
     }
 
-    requestAnimationFrame(scrollHandler);
+    requestAnimationFrame(this.scrollHandler)
   }
 
-  function scrollHandler() {
+  scrollHandler() {
     if (window.scrollY > config.threshold) {
       if (config.stickyActive) {
-        return;
+        return
       }
 
       if (bottomNav) {
-        theme.utils.prepareTransition(bottomNav);
+        prepareTransition(bottomNav)
       }
       if (bottomSearch) {
-        theme.utils.prepareTransition(bottomSearch);
+        prepareTransition(bottomSearch)
       }
 
-      config.stickyActive = true;
+      config.stickyActive = true
 
-      wrapper.classList.add(classes.headerCompressed);
+      wrapper.classList.add(classes.headerCompressed)
 
       if (config.wrapperOverlayed) {
-        wrapper.classList.remove(classes.overlayStyle);
+        wrapper.classList.remove(classes.overlayStyle)
       }
 
-      document.dispatchEvent(new CustomEvent('headerStickyChange'));
+      document.dispatchEvent(new CustomEvent('headerStickyChange'))
     } else {
       if (!config.stickyActive) {
-        return;
+        return
       }
 
       if (bottomNav) {
-        theme.utils.prepareTransition(bottomNav);
+        prepareTransition(bottomNav)
       }
       if (bottomSearch) {
-        theme.utils.prepareTransition(bottomSearch);
+        prepareTransition(bottomSearch)
       }
 
-      config.stickyActive = false;
+      config.stickyActive = false
 
       // Update threshold in case page was loaded down the screen
-      config.threshold = wrapper.getBoundingClientRect().top;
+      config.threshold = wrapper.getBoundingClientRect().bottom
 
-      wrapper.classList.remove(classes.headerCompressed);
+      wrapper.classList.remove(classes.headerCompressed)
 
       if (config.wrapperOverlayed) {
-        wrapper.classList.add(classes.overlayStyle);
+        wrapper.classList.add(classes.overlayStyle)
       }
 
-      document.dispatchEvent(new CustomEvent('headerStickyChange'));
+      document.dispatchEvent(new CustomEvent('headerStickyChange'))
     }
   }
 
-  function menuDetailsHandler() {
-    const navDetails = document.querySelectorAll(selectors.navDetails);
-
-    navDetails.forEach((navDetail) => {
-      const summary = navDetail.querySelector('summary');
-
-      // if the navDetail is open, then close it when the user clicks outside of it
-      document.addEventListener('click', (evt) => {
-        if (navDetail.hasAttribute('open') && !navDetail.contains(evt.target)) {
-          navDetail.removeAttribute('open');
-          summary.setAttribute('aria-expanded', 'false');
-        } else {
-          if (navDetail.hasAttribute('open')) {
-            summary.setAttribute('aria-expanded', 'false');
-          } else {
-            summary.setAttribute('aria-expanded', 'true');
-          }
-        }
-      });
-    });
+  // Set a max-height on drawers when they're opened via CSS variable
+  // to account for changing mobile window heights
+  sizeDrawer(evt) {
+    let header = wrapper.offsetHeight
+    let heights = evt.detail?.heights?.reduce((a, b) => a + b, 0) ?? 0
+    let max = window.innerHeight - header - heights
+    this.style.setProperty('--max-drawer-height', `${max}px`)
+    this.style.setProperty('--header-nav-height', `${header - heights}px`)
   }
+}
 
-  return {
-    init: init,
-    removeOverlayClass: removeOverlayClass,
-    disableOverlayHeader: disableOverlayHeader
-  };
-})();
+customElements.define('header-nav', HeaderNav)

@@ -1,23 +1,29 @@
-{% comment %}
-  /**
-   * @param {object} section - section object
-   * @param {boolean} show_section - show section (default: true)
-   * @param {boolean} hide_homepage - hide on homepage
-   * @param {number} section_blocks_size - number of blocks in section
-   */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders a footer promotions section.
+
+  Accepts:
+  - show_section {boolean} - Whether to show the section
+  - hide_homepage {boolean} - Whether to hide the section on the homepage
+
+  Usage:
+  {% render 'section-footer-promotions' %}
+{%- endcomment -%}
 
 {%- liquid
+  assign show_section = show_section | default: section.settings.show_section, allow_false: true | default: true, allow_false: true
+  assign hide_homepage = hide_homepage | default: section.settings.hide_homepage, allow_false: true | default: true, allow_false: true
+
   if template == 'index' and hide_homepage
     assign show_section = false
-  endif -%
+  endif
 -%}
 
 {%- if show_section -%}
-  {%- if section_blocks_size > 0 -%}
+  {%- if section.blocks.size > 0 -%}
     {%- liquid
       assign grid_item_width = 'medium-up--one-half'
-      if section_blocks_size == 3
+      if section.blocks.size == 3
         assign grid_item_width = 'medium-up--one-third'
       endif
     -%}
@@ -33,9 +39,16 @@
                     {%- render 'color-scheme-texture', color_scheme: block.settings.color_scheme -%}
                   {%- endif -%}
                   {%- if block.settings.enable_image -%}
-                    <a href="{{ block.settings.button_link }}" class="footer__grid-image" aria-label="{{ block.settings.title }}">
+                    <a
+                      href="{{ block.settings.button_link }}"
+                      class="footer__grid-image {% if block.settings.image_width %}footer__grid-image--{{ block.settings.image_width }}{% endif %}"
+                      aria-label="{{ block.settings.title }}"
+                    >
                       {%- if block.settings.image != blank -%}
-                        <div class="image-wrap {% if block.settings.image_mask != 'none' %}svg-mask svg-mask--{{ block.settings.image_mask }}{% endif %}" style="height: 0; padding-bottom: {{ 100 | divided_by: block.settings.image.aspect_ratio }}%;">
+                        <div
+                          class="image-wrap {% if block.settings.image_mask != 'none' %}svg-mask svg-mask--{{ block.settings.image_mask }}{% endif %}"
+                          style="height: 0; padding-bottom: {{ 100 | divided_by: block.settings.image.aspect_ratio }}%;"
+                        >
                           {%- render 'image-element',
                             img: block.settings.image,
                             widths: '180, 360, 540, 720, 900, 1080',
@@ -44,13 +57,15 @@
                         </div>
                       {%- else -%}
                         <div class="image-wrap {% if block.settings.image_mask != 'none' %}svg-mask svg-mask--{{ block.settings.image_mask }}{% endif %}">
-                          {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg placeholder-svg--no-padding' }}
+                          {%- render 'placeholder-svg', name: 'lifestyle-1', no_padding: true -%}
                         </div>
                       {%- endif -%}
                     </a>
                   {%- endif -%}
                   {%- if block.settings.title != blank -%}
-                    <h2 class="h3 rte--block">{{ block.settings.title }}</h2>
+                    <h2 class="{% if block.settings.heading_size %}{{ block.settings.heading_size }}{% else %}h3{% endif %} rte--block">
+                      {{ block.settings.title }}
+                    </h2>
                   {%- endif -%}
                   {%- if block.settings.text != blank -%}
                     <div class="rte-setting rte--block text-spacing">{{ block.settings.text }}</div>

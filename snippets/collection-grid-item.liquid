@@ -1,27 +1,38 @@
-{% comment %}
-  /**
-   * @param {string} collection_grid_image - collection grid image
-   * @param {string} collection_grid_shape - collection grid shape
-   * @param {string} collection_grid_image_fill - collection grid image fill
-   * @param {object} collection - collection object
-   * @param {number} sizeVariable - image size variable
-   * @param {string} fallback - image fallback
-   * @param {object} [block] - block object
-   * @param {string} [collection_title] - collection title
-   * @param {string} [gridView] - grid view class
-   */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders a collection grid item.
+
+  Accepts:
+  - block {block} - The block object
+  - collection {collection} - The collection object
+  - collection_title {string} - The collection title
+  - collection_grid_image {string} - The collection grid image
+  - collection_grid_shape {string} - The collection grid shape
+  - collection_grid_image_fill {string} - The collection grid image fill
+  - collection_grid_color {string} - The collection grid color
+  - grid_view {string} - The grid view class
+
+  Usage:
+  {% render 'collection-grid-item', collection: collection %}
+{%- endcomment -%}
 
 {%- liquid
+  assign block = block | default: blank
+  assign collection = section.settings.collection | default: collection
+  assign collection_title = collection_title | default: blank
+  assign collection_grid_image = collection_grid_image | default: settings.collection_grid_image | default: 'collection'
+  assign collection_grid_shape = collection_grid_shape | default: settings.collection_grid_shape | default: 'square'
+  assign collection_grid_image_fill = collection_grid_image_fill | default: settings.collection_grid_image_fill, allow_false: true | default: true, allow_false: true
+  assign collection_grid_color = collection_grid_color | default: settings.collection_grid_color | default: 'grey'
 
   assign collection_link = collection.url
   if block.settings.title != blank
     assign title_output = block.settings.title
   else
     if collection == blank
-      assign title_output = 'home_page.onboarding.collection_title' | t
+      assign title_output = 'labels.example_collection' | t
       assign collection_link = '/collections/all'
-    elsif collection_title
+    elsif collection_title != blank
       assign title_output = collection_title
     else
       assign title_output = collection.title | escape
@@ -29,9 +40,8 @@
   endif
 -%}
 
-<div class="grid-item {{ gridView }}" {{ block.shopify_attributes }}>
+<div class="grid-item {{ grid_view }}" {{ block.shopify_attributes }}>
   <a href="{{ collection_link }}" class="collection-item">
-
     {%- liquid
       if collection_grid_image == 'collection' and collection.image
         assign collection_image = collection.image
@@ -42,13 +52,20 @@
       endif
     -%}
 
-    <div class="collection-image-wrap collection-image--{{ collection_grid_shape }}
-      collection-image-fill-space--{{ collection_grid_image_fill }}
+    <div
+      class="
+        collection-image-wrap collection-image--{{ collection_grid_shape }}
+        collection-image-fill-space--{{ collection_grid_image_fill }}
+        collection-image-color--{{ collection_grid_color | default: 'undefined' }}
+        overlay
+        {% if collection_grid_color == 'white' %}overlay--before{% endif %}
       "
     >
       {%- if collection == blank or collection_image == blank -%}
         {%- capture placeholder -%}collection-{% cycle 1, 2, 3, 4, 5, 6 %}{%- endcapture -%}
-        <div class="collection-image collection-image--placeholder">{{ placeholder | placeholder_svg_tag: 'placeholder-svg' }}</div>
+        <div class="collection-image collection-image--placeholder">
+          {%- render 'placeholder-svg', name: placeholder -%}
+        </div>
       {%- else -%}
         <div class="collection-image{% if using_collection_image %} collection-image--is-collection{% endif %} image-wrap">
           {%- render 'image-element',
@@ -56,7 +73,7 @@
             sizes: sizes,
             sizeVariable: sizeVariable,
             fallback: fallback,
-            widths: '720, 900, 1080',
+            widths: '720, 900, 1080'
           -%}
         </div>
       {%- endif -%}

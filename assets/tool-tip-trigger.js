@@ -1,16 +1,16 @@
-import '@archetype-themes/scripts/helpers/utils';
+import { debounce } from '@archetype-themes/utils/utils'
 
 class ToolTipTrigger extends HTMLElement {
   constructor() {
-    super();
-    this.el = this;
-    this.toolTipContent = this.querySelector('[data-tool-tip-trigger-content]');
+    super()
+    this.el = this
+    this.toolTipContent = this.querySelector('[data-tool-tip-trigger-content]')
 
     // If quick view or quick add, trigger on the grid item so we
     // can preload data as soon as we hover or focus on it
-    this.trigger = this.dataset.toolTip.includes('Quick') ? this.el.closest('[data-product-grid-item]') : this.el;
+    this.trigger = this.dataset.toolTip.includes('Quick') ? this.el.closest('[data-product-grid-item]') : this.el
 
-    this.init();
+    this.init()
   }
 
   init() {
@@ -18,39 +18,43 @@ class ToolTipTrigger extends HTMLElement {
       detail: {
         context: this.dataset.toolTip,
         content: this.toolTipContent?.innerHTML,
-        tool_tip_classes: this.dataset.toolTipClasses,
+        tool_tip_classes: this.dataset.toolTipClasses
       },
       bubbles: true
-    });
+    })
 
     const toolTipInteract = new CustomEvent('tooltip:interact', {
       detail: {
         context: this.dataset.toolTip,
         content: this.toolTipContent?.innerHTML,
-        tool_tip_classes: this.dataset.toolTipClasses,
+        tool_tip_classes: this.dataset.toolTipClasses
       },
       bubbles: true
-    });
+    })
 
-    const debouncedMouseOverHandler = theme.utils.debounce(500, (e) => {
-      e.stopPropagation();
-      this.dispatchEvent(toolTipInteract);
-    }, true);
+    const debouncedMouseOverHandler = debounce(
+      500,
+      (e) => {
+        e.stopPropagation()
+        this.dispatchEvent(toolTipInteract)
+      },
+      true
+    )
 
-    const debouncedFocusInHandler = theme.utils.debounce(500, (e) => {
-      e.stopPropagation();
-      this.dispatchEvent(toolTipInteract);
-    });
+    const debouncedFocusInHandler = debounce(500, (e) => {
+      e.stopPropagation()
+      this.dispatchEvent(toolTipInteract)
+    })
 
-    this.trigger.addEventListener('mouseover', debouncedMouseOverHandler);
+    this.trigger.addEventListener('mouseover', debouncedMouseOverHandler)
 
-    this.trigger.addEventListener('focusin', debouncedFocusInHandler);
+    this.trigger.addEventListener('focusin', debouncedFocusInHandler)
 
-    this.el.addEventListener('click', e => {
-      e.stopPropagation();
-      this.dispatchEvent(toolTipOpen);
-    });
+    this.el.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.dispatchEvent(toolTipOpen)
+    })
   }
 }
 
-customElements.define('tool-tip-trigger', ToolTipTrigger);
+customElements.define('tool-tip-trigger', ToolTipTrigger)

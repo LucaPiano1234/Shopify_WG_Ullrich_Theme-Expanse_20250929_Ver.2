@@ -1,8 +1,5 @@
-import AOS from '@archetype-themes/scripts/helpers/init-AOS';
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/modules/cart-api';
-import '@archetype-themes/scripts/modules/quantity-selectors';
-import '@archetype-themes/scripts/helpers/currency';
+import { executeJSmodules } from '@archetype-themes/utils/utils'
+import { EVENTS } from '@archetype-themes/utils/events'
 
 /*============================================================================
   CartForm
@@ -13,109 +10,87 @@ export default class CartForm {
   constructor(form) {
     this.selectors = {
       products: '[data-products]',
-      qtySelector: '.js-qty__wrapper',
       discounts: '[data-discounts]',
-      savings: '[data-savings]',
       subTotal: '[data-subtotal]',
 
-      cartBubble: '.cart-link__bubble',
-      cartNote: '[name="note"]',
+      locales: '[data-locales]',
       termsCheckbox: '.cart__terms-checkbox',
       checkoutBtn: '.cart__checkout'
-    };
+    }
 
     this.classes = {
       btnLoading: 'btn--loading'
-    };
+    }
 
     this.config = {
       requiresTerms: false
-    };
+    }
 
     if (!form) {
-      return;
+      return
     }
 
-    this.form = form;
-    this.wrapper = form.parentNode;
-    this.location = form.dataset.location;
-    this.namespace = '.cart-' + this.location;
+    this.form = form
+    this.wrapper = form.parentNode
     this.products = form.querySelector(this.selectors.products)
-    this.submitBtn = form.querySelector(this.selectors.checkoutBtn);
+    this.submitBtn = form.querySelector(this.selectors.checkoutBtn)
 
-    this.discounts = form.querySelector(this.selectors.discounts);
-    this.savings = form.querySelector(this.selectors.savings);
-    this.subtotal = form.querySelector(this.selectors.subTotal);
-    this.termsCheckbox = form.querySelector(this.selectors.termsCheckbox);
-    this.noteInput = form.querySelector(this.selectors.cartNote);
-
-    this.cartItemsUpdated = false;
+    this.discounts = form.querySelector(this.selectors.discounts)
+    this.subtotal = form.querySelector(this.selectors.subTotal)
+    this.termsCheckbox = form.querySelector(this.selectors.termsCheckbox)
+    this.locales = JSON.parse(this.form.querySelector(this.selectors.locales).textContent)
 
     if (this.termsCheckbox) {
-      this.config.requiresTerms = true;
+      this.config.requiresTerms = true
     }
 
-    this.init();
+    this.init()
   }
 
   init() {
-    if (AOS) { AOS.refreshHard() }
+    document.addEventListener('cart:quantity', this.quantityChanged.bind(this))
 
-    this.initQtySelectors();
-
-    document.addEventListener('cart:quantity' + this.namespace, this.quantityChanged.bind(this));
-
-    this.form.on('submit' + this.namespace, this.onSubmit.bind(this));
-
-    if (this.noteInput) {
-      this.noteInput.addEventListener('change', function() {
-        const newNote = this.value;
-        theme.cart.updateNote(newNote);
-      });
-    }
+    this.form.addEventListener('submit', this.onSubmit.bind(this))
 
     // Dev-friendly way to build the cart
-    document.addEventListener('cart:build', function() {
-      this.buildCart();
-    }.bind(this));
-  }
-
-  reInit() {
-    this.initQtySelectors();
+    document.addEventListener(
+      'cart:build',
+      function () {
+        this.buildCart()
+      }.bind(this)
+    )
   }
 
   onSubmit(evt) {
-    this.submitBtn.classList.add(this.classes.btnLoading);
+    this.submitBtn.classList.add(this.classes.btnLoading)
 
     /*
       Checks for drawer or cart open class on body element
-      and then stops the form from being submitted. We are also
-      checking against a custom property, this.cartItemsUpdated = false.
+      and then stops the form from being submitted.
 
       Error is handled in the quantityChanged method
 
-      For Expanse/Fetch/Gem quick add, if an error is present it is alerted
+      For Expanse/Fetch/Gem/Vino quick add, if an error is present it is alerted
       through the add to cart fetch request in quick-add.js.
-
-      Custom property this.cartItemsUpdated = false is reset in cart-drawer.js for
-      Expanse/Fetch/Gem when using quick add
     */
 
-    if (document.documentElement.classList.contains('js-drawer-open') && this.cartItemsUpdated ||
-      document.documentElement.classList.contains('cart-open') && this.cartItemsUpdated) {
-      this.submitBtn.classList.remove(this.classes.btnLoading);
-      evt.preventDefault();
-      return false;
+    if (
+      (document.documentElement.classList.contains('js-drawer-open') && this.cartItemsUpdated) ||
+      (document.documentElement.classList.contains('cart-open') && this.cartItemsUpdated)
+    ) {
+      this.submitBtn.classList.remove(this.classes.btnLoading)
+      evt.preventDefault()
+      return false
     }
 
     if (this.config.requiresTerms) {
       if (this.termsCheckbox.checked) {
         // continue to checkout
       } else {
-        alert(theme.strings.cartTermsConfirmation);
+        alert(this.locales.cartTermsConfirmation)
         this.submitBtn.classList.remove(this.classes.btnLoading)
-        evt.preventDefault();
-        return false;
+        evt.preventDefault()
+        return false
       }
     }
   }
@@ -124,169 +99,112 @@ export default class CartForm {
     Query cart page to get markup
   ==============================================================================*/
   _parseProductHTML(text) {
-    const html = document.createElement('div');
-    html.innerHTML = text;
+    const html = document.createElement('div')
+    html.innerHTML = text
 
     return {
       items: html.querySelector('.cart__items'),
-      discounts: html.querySelector('.cart__discounts')
+      discounts: html.querySelector('.cart__discounts'),
+      subtotal: html.querySelector('.cart__subtotal'),
+      count: html.querySelector('.cart-link__bubble')
     }
   }
 
   buildCart() {
-    theme.cart.getCartProductMarkup().then(this.cartMarkup.bind(this));
+    return this.getCartProductMarkup().then(this.cartMarkup.bind(this))
   }
 
   cartMarkup(text) {
-    const markup = this._parseProductHTML(text);
-    const items = markup.items;
-    const count = parseInt(items.dataset.count);
-    const subtotal = items.dataset.cartSubtotal;
-    const savings = items.dataset.cartSavings;
+    const markup = this._parseProductHTML(text)
+    const items = markup.items
+    const count = parseInt(items.dataset.count)
+    const subtotal = markup.subtotal.innerHTML
 
-    this.updateCartDiscounts(markup.discounts);
-    this.updateSavings(savings);
+    this.updateCartDiscounts(markup.discounts)
 
     if (count > 0) {
-      this.wrapper.classList.remove('is-empty');
+      this.wrapper.classList.remove('is-empty')
     } else {
-      this.wrapper.classList.add('is-empty');
+      this.wrapper.classList.add('is-empty')
     }
 
-    this.updateCount(count);
-
     // Append item markup
-    this.products.innerHTML = '';
-    this.products.append(items);
+    this.products.innerHTML = ''
+    this.products.append(items)
+    const scripts = this.products.querySelectorAll('script[type="module"]')
+    executeJSmodules(scripts)
 
     // Update subtotal
-    this.subtotal.innerHTML = theme.Currency.formatMoney(subtotal, theme.settings.moneyFormat);
-
-    this.reInit();
-
-    if (AOS) { AOS.refreshHard() }
+    this.subtotal.innerHTML = subtotal
 
     if (Shopify && Shopify.StorefrontExpressButtons) {
-      Shopify.StorefrontExpressButtons.initialize();
+      Shopify.StorefrontExpressButtons.initialize()
     }
   }
 
   updateCartDiscounts(markup) {
     if (!this.discounts) {
-      return;
+      return
     }
-    this.discounts.innerHTML = '';
-    this.discounts.append(markup);
-  }
-
-  /*============================================================================
-    Quantity handling
-  ==============================================================================*/
-  initQtySelectors() {
-    this.form.querySelectorAll(this.selectors.qtySelector).forEach(el => {
-      const selector = new theme.QtySelector(el, {
-        namespace: this.namespace,
-        isCart: true
-      });
-    });
+    this.discounts.innerHTML = ''
+    this.discounts.append(markup)
   }
 
   quantityChanged(evt) {
-    const key = evt.detail[0];
-    const qty = evt.detail[1];
-    const el = evt.detail[2];
+    const key = evt.detail[0]
+    const qty = evt.detail[1]
+    const el = evt.detail[2]
 
     if (!key || !qty) {
-      return;
+      return
     }
 
     // Disable qty selector so multiple clicks can't happen while loading
     if (el) {
-      el.classList.add('is-loading');
+      el.classList.add('is-loading')
     }
 
-    theme.cart.changeItem(key, qty)
-      .then(function(cart) {
-
-        const parsedCart = JSON.parse(cart);
-
-        if (parsedCart.status === 422) {
-          alert(parsedCart.message);
-        } else {
-          const updatedItem = parsedCart.items.find(item => item.key === key);
-
-          // Update cartItemsUpdated property on object so we can reference later
-          if (updatedItem && (evt.type === 'cart:quantity.cart-cart-drawer' || evt.type === 'cart:quantity.cart-header')) {
-            this.cartItemsUpdated = true;
-          }
-
-          if ((updatedItem && evt.type === 'cart:quantity.cart-cart-drawer') || (updatedItem && evt.type === 'cart:quantity.cart-header')) {
-            if (updatedItem.quantity !== qty) {
-            }
-            // Reset property on object so that checkout button will work as usual
-            this.cartItemsUpdated = false;
-          }
-
-          if (parsedCart.item_count > 0) {
-            this.wrapper.classList.remove('is-empty');
-          } else {
-            this.wrapper.classList.add('is-empty');
-          }
-        }
-
-        this.buildCart();
-
-        document.dispatchEvent(new CustomEvent('cart:updated', {
-          detail: {
-            cart: parsedCart
-          }
-        }));
-      }.bind(this))
-      .catch(function(XMLHttpRequest){});
+    this.changeItem({
+      id: key,
+      quantity: qty,
+      // Bundled section rendering
+      sections: 'cart-ajax'
+    })
+      .then((state) => {
+        this.cartMarkup(state.sections['cart-ajax'])
+        document.dispatchEvent(new CustomEvent(EVENTS.cartUpdated, { detail: { cart: state } }))
+      })
+      .catch(async (response) => {
+        const data = await response.json()
+        alert(data.description)
+        // Enable qty selector again
+        el.classList.remove('is-loading')
+        // Reset quantity input to initial value
+        el.firstElementChild.value = el.firstElementChild.dataset.initialValue
+      })
   }
 
-  /*============================================================================
-    Update elements of the cart
-  ==============================================================================*/
-  updateSubtotal(subtotal) {
-    this.form.querySelector(this.selectors.subTotal).innerHTML = theme.Currency.formatMoney(subtotal, theme.settings.moneyFormat);
+  changeItem(body) {
+    return fetch(`${window.Shopify.routes.root}cart/change.js`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    }).then((response) => {
+      if (!response.ok) throw response
+      return response.json()
+    })
   }
 
-  updateSavings(savings) {
-    if (!this.savings) {
-      return;
-    }
+  getCartProductMarkup() {
+    let url = `${window.Shopify.routes.root}?section_id=cart-ajax`
 
-    if (savings > 0) {
-      const amount = theme.Currency.formatMoney(savings, theme.settings.moneyFormat);
-      this.savings.classList.remove('hide');
-      this.savings.innerHTML = theme.strings.cartSavings.replace('[savings]', amount);
-    } else {
-      this.savings.classList.add('hide');
-    }
-  }
-
-  updateCount(count) {
-    const countEls = document.querySelectorAll('.cart-link__bubble-num');
-
-    if (countEls.length) {
-      countEls.forEach(el => {
-        el.innerText = count;
-      });
-    }
-
-    // show/hide bubble(s)
-    const bubbles = document.querySelectorAll(this.selectors.cartBubble);
-    if (bubbles.length) {
-      if (count > 0) {
-        bubbles.forEach(b => {
-          b.classList.add('cart-link__bubble--visible');
-        });
-      } else {
-        bubbles.forEach(b => {
-          b.classList.remove('cart-link__bubble--visible');
-        });
-      }
-    }
+    return fetch(url, {
+      credentials: 'same-origin',
+      method: 'GET'
+    })
+      .then((response) => response.text())
+      .catch((e) => console.error(e))
   }
 }

@@ -1,92 +1,78 @@
-// This is the javascript entrypoint for the testimonials section.
-// This file and all its inclusions will be processed through esbuild
+import { Slideshow } from '@archetype-themes/modules/slideshow'
+import { HTMLThemeElement } from '@archetype-themes/custom-elements/theme-element'
 
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/init-observer';
-import { Slideshow } from '@archetype-themes/scripts/modules/slideshow';
-
-class Testimonials extends HTMLElement {
-  constructor() {
-    super();
+class Testimonials extends HTMLThemeElement {
+  connectedCallback() {
+    super.connectedCallback()
 
     this.defaults = {
       adaptiveHeight: true,
       avoidReflow: true,
       pageDots: true,
       prevNextButtons: false
-    };
+    }
 
-    this.container = this;
-    this.timeout;
-    this.sectionId = this.container.getAttribute('data-section-id');
-    this.slideshow = this.container.querySelector(`#Testimonials-${this.sectionId}`);
-    this.namespace = `.testimonial-${this.sectionId}`;
+    this.timeout
+    this.slideshow = this.querySelector(`#Testimonials-${this.sectionId}`)
+    this.namespace = `.testimonial-${this.sectionId}`
 
-    if (!this.slideshow) { return }
+    if (!this.slideshow) {
+      return
+    }
 
-    document.dispatchEvent(new CustomEvent('testimonials:loaded', {
-      detail: {
-        sectionId: this.sectionId
-      }
-    }));
-
-    this.addEventListener('shopify:section:deselect', this.onDeselect);
-    this.addEventListener('shopify:block:select', this.onBlockSelect);
-    this.addEventListener('shopify:block:deselect', this.onBlockDeselect);
-
-    theme.initWhenVisible({
-      element: this.container,
-      callback: this.init.bind(this),
-      threshold: 600
-    });
+    this.init()
   }
 
   init() {
     // Do not wrap when only a few blocks
     if (this.slideshow.dataset.count <= 3) {
-      this.defaults.wrapAround = false;
+      this.defaults.wrapAround = false
     }
 
-    this.flickity = new Slideshow(this.slideshow, this.defaults);
+    this.flickity = new Slideshow(this.slideshow, this.defaults)
 
     // Autoscroll to next slide on load to indicate more blocks
     if (this.slideshow.dataset.count > 2) {
-      this.timeout = setTimeout(function() {
-        this.flickity.goToSlide(1);
-      }.bind(this), 1000);
+      this.timeout = setTimeout(
+        function () {
+          this.flickity.goToSlide(1)
+        }.bind(this),
+        1000
+      )
     }
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback()
+
     if (this.flickity && typeof this.flickity.destroy === 'function') {
-      this.flickity.destroy();
+      this.flickity.destroy()
     }
   }
 
-  onDeselect() {
+  onSectionDeselect() {
     if (this.flickity && typeof this.flickity.play === 'function') {
-      this.flickity.play();
+      this.flickity.play()
     }
   }
 
-  onBlockSelect(evt) {
-    const slide = this.slideshow.querySelector(`.testimonials-slide--${evt.detail.blockId}`);
-    const index = parseInt(slide.dataset.index);
+  onBlockSelect({ detail: { blockId } }) {
+    const slide = this.slideshow.querySelector(`.testimonials-slide--${blockId}`)
+    const index = parseInt(slide.dataset.index)
 
-    clearTimeout(this.timeout);
+    clearTimeout(this.timeout)
 
     if (this.flickity && typeof this.flickity.pause === 'function') {
-      this.flickity.goToSlide(index);
-      this.flickity.pause();
+      this.flickity.goToSlide(index)
+      this.flickity.pause()
     }
   }
 
   onBlockDeselect() {
     if (this.flickity && typeof this.flickity.play === 'function') {
-      this.flickity.play();
+      this.flickity.play()
     }
   }
 }
 
-customElements.define('testimonials-component', Testimonials);
-
+customElements.define('testimonials-component', Testimonials)

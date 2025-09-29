@@ -1,26 +1,34 @@
-{% comment %}
-  /**
-   * @param {object} section - section object
-   * @param {object} logo - logo object
-   * @param {number} mobile_logo_width - mobile logo width
-   * @param {number} desktop_logo_width - desktop logo width
-   * @param {object} routes - theme routes object
-   * @param {object} shop - shop object
-   */
-{% endcomment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders the gift card header section.
+
+  Accepts:
+  - logo {image} - The logo object
+  - desktop_logo_width {100-400} - The desktop logo width
+  - mobile_logo_width {60-200} - The mobile logo width
+
+  Usage:
+  {% render 'section-giftcard-header' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign logo = logo | default: section.settings.logo
+  assign desktop_logo_width = desktop_logo_width | default: section.settings.desktop_logo_width | default: 200
+  assign mobile_logo_width = mobile_logo_width | default: section.settings.mobile_logo_width | default: 140
+-%}
 
 <header class="giftcard-header" role="banner">
   {%- assign has_logo = logo -%}
   {%- if has_logo -%}
     {%- style -%}
-    .site-header__logo a {
-      max-width: {{ mobile_logo_width }}px;
-    }
-    @media only screen and (min-width: 769px) {
       .site-header__logo a {
-        max-width: {{ desktop_logo_width }}px;
+        max-width: {{ mobile_logo_width }}px;
       }
-    }
+      @media only screen and (min-width: 769px) {
+        .site-header__logo a {
+          max-width: {{ desktop_logo_width }}px;
+        }
+      }
     {%- endstyle -%}
   {%- endif -%}
 
@@ -28,8 +36,8 @@
     {%- if logo -%}
       <a
         href="{{ routes.root_url }}"
-        class="site-header__logo-link">
-
+        class="site-header__logo-link"
+      >
         {% comment %} Desktop logo {% endcomment %}
         {%- assign width = desktop_logo_width | times: 2 -%}
         {%- assign height = desktop_logo_width | divided_by: logo.aspect_ratio -%}
@@ -44,7 +52,8 @@
         {%- capture mobile_widths -%}{{ mobile_logo_width }}, {{ mobile_logo_width | times: 2 }}{%- endcapture -%}
         {%- capture mobile_style -%}max-height: {{ mobile_logo_width | divided_by: logo.aspect_ratio }}px;max-width: {{ mobile_logo_width }}px;{%- endcapture -%}
 
-        {%- render 'image-element',
+        {%-
+          render 'image-element',
           img: logo,
           img_width: width,
           img_height: height,
@@ -57,7 +66,8 @@
           alt: logo.alt | default: shop.name,
           context: 'giftcard'
         -%}
-        {%- render 'image-element',
+        {%-
+          render 'image-element',
           img: logo,
           img_width: mobile_width,
           img_height: mobile_height,

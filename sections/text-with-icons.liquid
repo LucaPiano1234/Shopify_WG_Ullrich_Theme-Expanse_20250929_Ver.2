@@ -1,45 +1,35 @@
-{% render 'section-text-with-icons',
-  section: section,
-  divider: section.settings.divider,
-  title: section.settings.title,
-  align_text: section.settings.align_text,
-  desktop_columns_per_row: section.settings.desktop_columns_per_row,
-  button_label: section.settings.button_label,
-  button_link: section.settings.button_link,
-  icon_color: section.settings.icon_color,
-  icon_weight: settings.icon_weight
-%}
+{%- render 'section-text-with-icons' -%}
 
 {% schema %}
 {
-  "name": "t:common.text_with_icons.name.label",
+  "name": "t:labels.text_columns_with_386",
   "class": "index-section",
   "settings": [
     {
       "type": "text",
       "id": "title",
-      "label": "t:common.text_with_icons.settings.title.label"
+      "label": "t:labels.heading"
     },
     {
       "type": "select",
       "id": "align_text",
-      "label": "t:common.text_with_icons.settings.align_text.label",
+      "label": "t:labels.text_alignment",
       "default": "center",
       "options": [
         {
           "value": "left",
-          "label": "t:common.text_with_icons.settings.align_text.options.left.label"
+          "label": "t:labels.alignments.left"
         },
         {
           "value": "center",
-          "label": "t:common.text_with_icons.settings.align_text.options.center.label"
+          "label": "t:labels.alignments.center"
         }
       ]
     },
     {
       "type": "range",
       "id": "desktop_columns_per_row",
-      "label": "t:common.text_with_icons.settings.desktop_columns_per_row.label",
+      "label": "t:labels.desktop_columns_per",
       "default": 3,
       "min": 2,
       "max": 4,
@@ -48,137 +38,137 @@
     {
       "type": "color",
       "id": "icon_color",
-      "label": "t:common.text_with_icons.settings.icon_color.label",
+      "label": "t:labels.icon_color",
       "default": "#000"
     },
     {
       "type": "text",
       "id": "button_label",
-      "label": "t:common.text_with_icons.settings.button_label.label"
+      "label": "t:labels.button_label"
     },
     {
       "type": "url",
       "id": "button_link",
-      "label": "t:common.text_with_icons.settings.button_link.label"
+      "label": "t:labels.link"
     },
     {
       "type": "checkbox",
       "id": "divider",
-      "label": "t:common.text_with_icons.settings.divider.label",
+      "label": "t:actions.show_section_divider",
       "default": false
     }
   ],
   "blocks": [
     {
       "type": "text_block",
-      "name": "t:common.text_with_icons.blocks.column.name",
+      "name": "t:labels.column",
       "settings": [
         {
           "type": "select",
           "id": "icon",
-          "label": "t:common.text_with_icons.blocks.column.settings.icon.label",
+          "label": "t:labels.icon",
           "default": "chat",
           "options": [
             {
               "value": "bills",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.bills.label"
+              "label": "t:labels.bills"
             },
             {
               "value": "calendar",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.calendar.label"
+              "label": "t:labels.calendar"
             },
             {
               "value": "cart",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.cart.label"
+              "label": "t:labels.cart"
             },
             {
               "value": "charity",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.charity.label"
+              "label": "t:labels.charity"
             },
             {
               "value": "chat",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.chat.label"
+              "label": "t:labels.chat"
             },
             {
               "value": "envelope",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.envelope.label"
+              "label": "t:labels.envelope"
             },
             {
               "value": "gears",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.gears.label"
+              "label": "t:labels.gears"
             },
             {
               "value": "gift",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.gift.label"
+              "label": "t:labels.gift"
             },
             {
               "value": "globe",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.globe.label"
+              "label": "t:labels.globe"
             },
             {
               "value": "package",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.package.label"
+              "label": "t:labels.package"
             },
             {
               "value": "phone",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.phone.label"
+              "label": "t:labels.phone"
             },
             {
               "value": "plant",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.plant.label"
+              "label": "t:labels.plant"
             },
             {
               "value": "recycle",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.recycle.label"
+              "label": "t:labels.recycle"
             },
             {
               "value": "ribbon",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.ribbon.label"
+              "label": "t:labels.ribbon"
             },
             {
               "value": "sales-tag",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.sales-tag.label"
+              "label": "t:labels.sales_tag"
             },
             {
               "value": "shield",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.shield.label"
+              "label": "t:labels.shield"
             },
             {
               "value": "stopwatch",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.stopwatch.label"
+              "label": "t:labels.stopwatch"
             },
             {
               "value": "store",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.store.label"
+              "label": "t:labels.store"
             },
             {
               "value": "thumbs-up",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.thumbs-up.label"
+              "label": "t:labels.thumbs_up"
             },
             {
               "value": "trophy",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.trophy.label"
+              "label": "t:labels.trophy"
             },
             {
               "value": "truck",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.truck.label"
+              "label": "t:labels.truck"
             },
             {
               "value": "wallet",
-              "label": "t:common.text_with_icons.blocks.column.settings.icon.options.wallet.label"
+              "label": "t:labels.wallet"
             }
           ]
         },
         {
           "type": "text",
           "id": "title",
-          "label": "t:common.text_with_icons.blocks.column.settings.title.label",
+          "label": "t:labels.heading",
           "default": "Example title"
         },
         {
           "type": "richtext",
           "id": "text",
-          "label": "t:common.text_with_icons.blocks.column.settings.text.label",
+          "label": "t:labels.text",
           "default": "<p>Use this section to explain a set of product features, to link to a series of pages, or to answer common questions about your products.</p>"
         }
       ]
@@ -186,7 +176,7 @@
   ],
   "presets": [
     {
-      "name": "t:common.text_with_icons.presets.text_with_icons.name",
+      "name": "t:labels.text_columns_with_386",
       "blocks": [
         {
           "type": "text_block"

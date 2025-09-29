@@ -1,14 +1,19 @@
-// This is the javascript entrypoint for the image-compare section.
-// This file and all its inclusions will be processed through esbuild
+import { debounce } from '@archetype-themes/utils/utils'
+import { HTMLThemeElement } from '@archetype-themes/custom-elements/theme-element'
 
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/utils';
-
-class ImageCompare extends HTMLElement {
-  constructor () {
+class ImageCompare extends HTMLThemeElement {
+  constructor() {
     super()
+    this.active = false
+    this.currentX = 0
+    this.initialX = 0
+    this.xOffset = 0
+    this.abortController = new AbortController()
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
     this.el = this
-    this.sectionId = this.dataset.sectionId
     this.button = this.querySelector('[data-button]')
     this.draggableContainer = this.querySelector('[data-draggable]')
     this.primaryImage = this.querySelector('[data-primary-image]')
@@ -16,50 +21,51 @@ class ImageCompare extends HTMLElement {
 
     this.calculateSizes()
 
-    this.active = false
-    this.currentX = 0
-    this.initialX = 0
-    this.xOffset = 0
-
     this.buttonOffset = this.button.offsetWidth / 2
 
-    this.el.addEventListener('touchstart', this.dragStart, false)
-    this.el.addEventListener('touchend', this.dragEnd, false)
-    this.el.addEventListener('touchmove', this.drag, false)
+    const { signal } = this.abortController
 
-    this.el.addEventListener('mousedown', this.dragStart, false)
-    this.el.addEventListener('mouseup', this.dragEnd, false)
-    this.el.addEventListener('mousemove', this.drag, false)
+    this.el.addEventListener('touchstart', this.dragStart.bind(this), { signal })
+    this.el.addEventListener('touchend', this.dragEnd.bind(this), { signal })
+    this.el.addEventListener('touchmove', this.drag.bind(this), { signal })
 
-    window.on('resize', theme.utils.debounce(250, () => { this.calculateSizes(true)}))
+    this.el.addEventListener('mousedown', this.dragStart.bind(this), { signal })
+    this.el.addEventListener('mouseup', this.dragEnd.bind(this), { signal })
+    this.el.addEventListener('mousemove', this.drag.bind(this), { signal })
 
-    document.addEventListener('shopify:section:load', event => {
-      if (event.detail.sectionId === this.sectionId && this.primaryImage !== null) {
-        this.calculateSizes()
-      }
-    })
+    window.addEventListener(
+      'resize',
+      debounce(250, () => {
+        this.calculateSizes(true)
+      }),
+      { signal }
+    )
   }
 
-  calculateSizes (hasResized = false) {
-    this.active = false
-    this.currentX = 0
-    this.initialX = 0
-    this.xOffset = 0
+  disconnectedCallback() {
+    this.abortController.abort()
+  }
 
+  calculateSizes(hasResized = false) {
     this.buttonOffset = this.button.offsetWidth / 2
 
     this.elWidth = this.el.offsetWidth
-
-    this.button.style.transform = `translate(-${this.buttonOffset}px, -50%)`
 
     if (this.primaryImage) {
       this.primaryImage.style.width = `${this.elWidth}px`
     }
 
-    if (hasResized) this.draggableContainer.style.width = `${this.elWidth / 2}px`
+    if (hasResized) {
+      const ratio = this.currentX / this.elWidth
+      this.currentX = ratio * this.elWidth
+      this.setTranslate(this.currentX, this.button)
+    } else {
+      this.draggableContainer.style.width = `${this.elWidth / 2}px`
+      this.button.style.transform = `translate(-${this.buttonOffset}px, -50%)`
+    }
   }
 
-  dragStart (e) {
+  dragStart(e) {
     if (e.type === 'touchstart') {
       this.initialX = e.touches[0].clientX - this.xOffset
     } else {
@@ -71,15 +77,14 @@ class ImageCompare extends HTMLElement {
     }
   }
 
-  dragEnd () {
+  dragEnd() {
     this.initialX = this.currentX
 
     this.active = false
   }
 
-  drag (event) {
+  drag(event) {
     if (this.active) {
-
       event.preventDefault()
 
       if (event.type === 'touchmove') {
@@ -93,25 +98,28 @@ class ImageCompare extends HTMLElement {
     }
   }
 
-  setTranslate (xPos, el) {
+  setTranslate(xPos, el) {
     let newXpos = xPos - this.buttonOffset
-    let newVal = (this.elWidth / 2) + xPos
+    let containerWidth
 
     const boundaryPadding = 50
     const XposMin = (this.elWidth / 2 + this.buttonOffset) * -1
     const XposMax = this.elWidth / 2 - this.buttonOffset
 
     // Set boundaries for dragging
-    if (newXpos < (XposMin + boundaryPadding)) {
+    if (newXpos < XposMin + boundaryPadding) {
       newXpos = XposMin + boundaryPadding
-      newVal = boundaryPadding
-    } else if (newXpos > (XposMax - boundaryPadding)) {
+      containerWidth = boundaryPadding
+    } else if (newXpos > XposMax - boundaryPadding) {
       newXpos = XposMax - boundaryPadding
-      newVal = this.elWidth - boundaryPadding
+      containerWidth = this.elWidth - boundaryPadding
+    } else {
+      containerWidth =
+        document.documentElement.dir === 'rtl' ? this.elWidth - (this.elWidth / 2 + xPos) : this.elWidth / 2 + xPos
     }
 
     el.style.transform = `translate(${newXpos}px, -50%)`
-    this.draggableContainer.style.width = `${newVal}px`
+    this.draggableContainer.style.width = `${containerWidth}px`
   }
 }
 

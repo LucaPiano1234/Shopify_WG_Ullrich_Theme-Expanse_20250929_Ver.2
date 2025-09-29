@@ -1,152 +1,155 @@
-import AOS from '@archetype-themes/scripts/helpers/init-AOS';
-import '@archetype-themes/scripts/config';
-import '@archetype-themes/scripts/helpers/utils';
+import { debounce } from '@archetype-themes/scripts/helpers/utils'
 
 class Maps extends HTMLElement {
   constructor() {
-    super();
+    super()
     this.config = {
       zoom: 14
     }
 
-    this.apiStatus = null;
-    this.errors = {};
+    this.apiStatus = null
 
-    this.section = this;
-    this.sectionID = this.section.getAttribute('data-section-id');
-    this.map = this.section.querySelector('[data-map]');
-    this.mapOverlay = this.section.querySelector('[data-map-overlay]');
-    this.key = this.map.dataset.apiKey;
+    this.section = this
+    this.sectionID = this.section.getAttribute('data-section-id')
+    this.map = this.section.querySelector('[data-map]')
+    this.locales = JSON.parse(this.section.querySelector('[data-locales]').textContent)
+    this.mapOverlay = this.section.querySelector('[data-map-overlay]')
+    this.key = this.map.dataset.apiKey
 
     // Global function called by Google on auth errors.
     // Show an auto error message on all map instances.
-    window.gm_authFailure = function() {
-      if (!Shopify.designMode) return;
+    window.gm_authFailure = function () {
+      if (!Shopify.designMode) return
 
-      this.section.classList.add('map-section--load-error');
-      this.map.parentNode.removeChild(map);
-      window.mapError(theme.strings.authError);
-    };
+      this.section.classList.add('map-section--load-error')
+      this.map.parentNode.removeChild(this.map)
+      window.mapError(this.locales.authError)
+    }.bind(this)
 
-    window.mapError = function(error) {
-      var message = document.createElement('div');
-      message.classList.add('map-section__error', 'errors', 'text-center');
-      message.innerHTML = error;
+    window.mapError = function (error) {
+      var message = document.createElement('div')
+      message.classList.add('map-section__error', 'errors', 'text-center')
+      message.innerHTML = error
 
-      this.mapOverlay.parentNode.prepend(message);
-      this.section.querySelectorAll('[data-map-link]').forEach(link => {
-        link.classList.add('hide');
-      });
-    };
+      this.mapOverlay.parentNode.prepend(message)
+      this.section.querySelectorAll('[data-map-link]').forEach((link) => {
+        link.classList.add('hide')
+      })
+    }.bind(this)
 
-    this.prepMapApi();
+    this.prepMapApi()
   }
 
   prepMapApi() {
     if (this.apiStatus === 'loaded') {
-      this.createMap();
+      this.createMap()
     } else {
       if (this.apiStatus !== 'loading') {
-        this.apiStatus = 'loading';
-        if (typeof window.google === 'undefined' || typeof window.google.maps === 'undefined' ) {
-
-          var script = document.createElement('script');
+        this.apiStatus = 'loading'
+        if (typeof window.google === 'undefined' || typeof window.google.maps === 'undefined') {
+          var script = document.createElement('script')
           script.onload = () => {
-            this.apiStatus = 'loaded';
-            this.createMap();
-          };
-          script.src = 'https://maps.googleapis.com/maps/api/js?key=' + this.key;
-          document.head.appendChild(script);
+            this.apiStatus = 'loaded'
+            this.createMap()
+          }
+          script.src = 'https://maps.googleapis.com/maps/api/js?key=' + this.key + '&libraries=marker'
+          document.head.appendChild(script)
         }
       }
     }
-
-
   }
 
   geolocate(map) {
-    if (!map) return;
+    if (!map) return
 
-    const geocoder = new google.maps.Geocoder();
-    const address = map.dataset.addressSetting;
+    const geocoder = new google.maps.Geocoder()
+    const address = map.dataset.addressSetting
 
     const deferred = new Promise((resolve, reject) => {
-      geocoder.geocode({ address: address }, function(results, status) {
+      geocoder.geocode({ address: address }, function (results, status) {
         if (status !== google.maps.GeocoderStatus.OK) {
-          reject(status);
+          reject(status)
         }
-        resolve(results);
-      });
-    });
+        resolve(results)
+      })
+    })
 
-    return deferred;
+    return deferred
   }
 
   createMap() {
-    const mapDiv = this.map;
+    const mapDiv = this.map
 
     return this.geolocate(mapDiv)
-      .then(
-        (results) => {
-          const mapOptions = {
-            zoom: this.config.zoom,
-            backgroundColor: 'none',
-            center: results[0].geometry.location,
-            draggable: false,
-            clickableIcons: false,
-            scrollwheel: false,
-            disableDoubleClickZoom: true,
-            disableDefaultUI: true
-          };
+      .then((results) => {
+        const mapOptions = {
+          zoom: this.config.zoom,
+          backgroundColor: 'none',
+          center: results[0].geometry.location,
+          draggable: false,
+          clickableIcons: false,
+          scrollwheel: false,
+          disableDoubleClickZoom: true,
+          disableDefaultUI: true,
+          mapId: this.map.id // Map ID is required for advanced markers.
+        }
 
-          const map = (this.map = new google.maps.Map(mapDiv, mapOptions));
-          const center = (this.center = map.getCenter());
+        const map = (this.map = new google.maps.Map(mapDiv, mapOptions))
+        const center = (this.center = map.getCenter())
 
-          google.maps.event.addDomListener(
-            window,
-            'resize',
-            theme.utils.debounce(250, () => {
-              google.maps.event.trigger(map, 'resize');
-              map.setCenter(center);
-              mapDiv.removeAttribute('style');
-            })
-          );
+        const marker = new google.maps.marker.AdvancedMarkerElement({
+          map: map,
+          position: map.getCenter()
+        })
 
-          if (Shopify.designMode) {
-            if (window.AOS) { AOS.refreshHard() }
-          }
+        window.addEventListener(
+          'resize',
+          debounce(250, () => {
+            google.maps.event.trigger(map, 'resize')
+            map.setCenter(center)
+            mapDiv.removeAttribute('style')
+          })
+        )
 
-          document.dispatchEvent(new CustomEvent('map-section:loaded', {
+        /**
+         * @event map-section:loaded
+         * @description Fired when the map section has been loaded.
+         * @param {string} detail.sectionId - The section's ID.
+         * @param {boolean} bubbles - Whether the event bubbles up through the DOM or not.
+         */
+        document.dispatchEvent(
+          new CustomEvent('map-section:loaded', {
             detail: {
               sectionID: this.sectionID
-            }, bubbles: true
-          }));
-        }
-      )
+            },
+            bubbles: true
+          })
+        )
+      })
       .catch((status) => {
-        var errorMessage;
+        var errorMessage
 
         switch (status) {
           case 'ZERO_RESULTS':
-            errorMessage = this.errors.addressNoResults;
-            break;
+            errorMessage = this.locales.addressNoResults
+            break
           case 'OVER_QUERY_LIMIT':
-            errorMessage = this.errors.addressQueryLimit;
-            break;
+            errorMessage = this.locales.addressQueryLimit
+            break
           case 'REQUEST_DENIED':
-            errorMessage = this.errors.authError;
-            break;
+            errorMessage = this.locales.authError
+            break
           default:
-            errorMessage = this.errors.addressError;
-            break;
+            errorMessage = this.locales.addressError
+            break
         }
 
         // Show errors only to merchant in the editor.
         if (Shopify.designMode) {
-          window.mapError(errorMessage);
+          window.mapError(errorMessage)
         }
-      });
+      })
   }
 }
 
-customElements.define('map-section', Maps);
+customElements.define('map-section', Maps)

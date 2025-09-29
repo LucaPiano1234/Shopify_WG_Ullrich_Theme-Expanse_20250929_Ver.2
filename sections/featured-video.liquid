@@ -1,41 +1,38 @@
-{%- render 'section-featured-video',
-    section: section,
-    divider: section.settings.divider,
-    title: section.settings.title,
-    video_url: section.settings.video_url,
-    color_button: settings.color_button
--%}
+{%- render 'section-featured-video' -%}
 
 {% schema %}
 {
-  "name": "t:sections.featured-video.name",
+  "name": "t:labels.video",
   "class": "index-section",
   "settings": [
     {
       "type": "text",
       "id": "title",
-      "label": "t:sections.featured-video.settings.title.label"
+      "label": "t:labels.heading"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:labels.video",
+      "info": "t:info.overrides_video_url_if_both_set"
     },
     {
       "type": "video_url",
       "id": "video_url",
-      "label": "t:sections.featured-video.settings.video_url.label",
+      "label": "t:labels.video_url",
       "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
-      "accept": [
-        "youtube",
-        "vimeo"
-      ]
+      "accept": ["youtube", "vimeo"]
     },
     {
       "type": "checkbox",
       "id": "divider",
-      "label": "t:sections.featured-video.settings.divider.label",
+      "label": "t:actions.show_section_divider",
       "default": false
     }
   ],
   "presets": [
     {
-      "name": "t:sections.featured-video.presets.video.name"
+      "name": "t:labels.video"
     }
   ],
   "disabled_on": {

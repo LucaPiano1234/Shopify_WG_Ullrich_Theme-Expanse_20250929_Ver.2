@@ -1,12 +1,11 @@
-{% comment %}
-  /**
-   * @param {object} shop - shop object
-   */
-{% endcomment %}
-
-{% comment %}
+{% # components v3.0.1 | Copyright © 2024 Archetype Themes Limited Partnership  | "Shopify Theme Store (https://www.shopify.com/legal/terms#9-additional-services)" License  %}
+{%- comment -%}
+  Renders the follow shop login button.
   https://shopify.dev/docs/api/liquid/filters/login_button
-{% endcomment %}
+
+  Usage:
+  {% render 'follow-shop-cta' %}
+{%- endcomment -%}
 
 {%- if shop.features.follow_on_shop? -%}
   <div class="footer__follow-on-shop">

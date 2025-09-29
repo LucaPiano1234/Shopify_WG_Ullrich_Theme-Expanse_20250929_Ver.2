@@ -1,61 +1,51 @@
-// This is the javascript entrypoint for the announcement-bar snippet.
-// This file and all its inclusions will be processed through postcss
+import { HTMLThemeElement } from '@archetype-themes/custom-elements/theme-element'
+import { Slideshow } from '@archetype-themes/modules/slideshow'
 
-import '@archetype-themes/scripts/config';
-import { Slideshow } from '@archetype-themes/scripts/modules/slideshow';
+class AnnouncementBar extends HTMLThemeElement {
+  connectedCallback() {
+    super.connectedCallback()
+    this.section = this.closest('.shopify-section')
+    this.sectionHeight = this.section.offsetHeight
 
-theme.announcementBar = (function() {
-  var args = {
-    autoPlay: 5000,
-    avoidReflow: true,
-    cellAlign: theme.config.rtl ? 'right' : 'left',
-    fade: true
-  };
-  var bar;
-  var flickity;
-
-  function init() {
-    bar = document.getElementById('AnnouncementSlider');
-    if (!bar) {
-      return;
+    if (parseInt(this.dataset.blockCount) === 1) {
+      return
     }
 
-    unload();
-
-    if (bar.dataset.blockCount === 1) {
-      return;
+    const args = {
+      autoPlay: 5000,
+      avoidReflow: true,
+      cellAlign: document.documentElement.dir === 'rtl' ? 'right' : 'left',
+      fade: true
     }
 
-    flickity = new Slideshow(bar, args);
+    this.flickity = new Slideshow(this, args)
+    document.documentElement.style.setProperty('--announcement-bar-height', this.sectionHeight + 'px')
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+
+    if (this.flickity && typeof this.flickity.destroy === 'function') {
+      this.flickity.destroy()
+    }
   }
 
   // Go to slide if selected in the editor
-  function onBlockSelect(id) {
-    var slide = bar.querySelector('#AnnouncementSlide-' + id);
-    var index = parseInt(slide.dataset.index);
+  onBlockSelect({ detail: { blockId } }) {
+    const slide = this.querySelector('#AnnouncementSlide-' + blockId)
+    const index = parseInt(slide.dataset.index)
 
-    if (flickity && typeof flickity.pause === 'function') {
-      flickity.goToSlide(index);
-      flickity.pause();
+    if (this.flickity && typeof this.flickity.pause === 'function') {
+      this.flickity.goToSlide(index)
+      this.flickity.pause()
     }
   }
 
-  function onBlockDeselect() {
-    if (flickity && typeof flickity.play === 'function') {
-      flickity.play();
+  onBlockDeselect() {
+    if (this.flickity && typeof this.flickity.play === 'function') {
+      this.flickity.play()
     }
   }
+}
 
-  function unload() {
-    if (flickity && typeof flickity.destroy === 'function') {
-      flickity.destroy();
-    }
-  }
-
-  return {
-    init: init,
-    onBlockSelect: onBlockSelect,
-    onBlockDeselect: onBlockDeselect,
-    unload: unload
-  };
-})();
+customElements.define('announcement-bar', AnnouncementBar)
