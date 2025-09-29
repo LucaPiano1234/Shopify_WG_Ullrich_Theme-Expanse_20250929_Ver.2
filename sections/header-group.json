@@ -1,1 +1,84 @@
-{"type":"header","name":"t:sections.header-group.name","sections":{"toolbar":{"type":"toolbar","blocks":{"827db180-18a9-4be2-9de9-ad668355d00e":{"type":"announcement","disabled":true,"settings":{"richtext":"<p>🔒 <a href=\"\/pages\/neuer-jahrgang-drop-newsletter-anmeldung\" title=\"Neuer Jahrgang Drop - Newsletter Anmeldung\"><strong>Bald exklusiv für unsere Newsletter-Abonnenten verfügbar! Zur Aktion<\/strong><\/a><\/p>","richtext_mobile":""}},"announcement_BiQdtg":{"type":"announcement","settings":{"richtext":"<p>🌱 Bio-Weine aus der Pfalz⎪📞 <a href=\"tel:+49 (0) 63 43 \/ 23 12\">+49 (0) 63 43 \/ 23 12<\/a>⎪✉️  <a href=\"mailto:post@weingut-ullrich.de\" target=\"_blank\" title=\"mailto:post@weingut-ullrich.de\">post@weingut-ullrich.de<br\/><\/a><\/p>","richtext_mobile":""}},"toolbar-0":{"type":"announcement","settings":{"richtext":"<p>🚛 Kostenfreier Versand ab 36 Flaschen<\/p>","richtext_mobile":"<p>🚛 Kostenfreier Versand ab 36 Flaschen<\/p>"}}},"block_order":["827db180-18a9-4be2-9de9-ad668355d00e","announcement_BiQdtg","toolbar-0"],"settings":{"announcement_center":true,"toolbar_social":true,"show_locale_selector":false,"show_currency_selector":true,"show_currency_flags":true}},"header":{"type":"header","blocks":{"0e8356f3-3746-446e-88c7-6e95a9745d66":{"type":"logo","settings":{"logo":"shopify:\/\/shop_images\/Vinum_Cantabile_Siegel.png","desktop_logo_width":100,"mobile_logo_width":60}}},"block_order":["0e8356f3-3746-446e-88c7-6e95a9745d66"],"settings":{"main_menu_link_list":"main-menu","hover_menu":true,"main_menu_alignment":"left","mega_products":false,"header_sticky":true,"header_footer_menu":true,"sticky_index":false,"sticky_collection":false}}},"order":["toolbar","header"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "t:sections.header-group.name",
+  "sections": {
+    "toolbar": {
+      "type": "toolbar",
+      "blocks": {
+        "827db180-18a9-4be2-9de9-ad668355d00e": {
+          "type": "announcement",
+          "disabled": true,
+          "settings": {
+            "richtext": "<p>🔒 <a href=\"/pages/neuer-jahrgang-drop-newsletter-anmeldung\" title=\"Neuer Jahrgang Drop - Newsletter Anmeldung\"><strong>Bald exklusiv für unsere Newsletter-Abonnenten verfügbar! Zur Aktion</strong></a></p>",
+            "richtext_mobile": ""
+          }
+        },
+        "announcement_BiQdtg": {
+          "type": "announcement",
+          "settings": {
+            "richtext": "<p>🌱 Bio-Weine aus der Pfalz⎪📞 <a href=\"tel:+49 (0) 63 43 / 23 12\">+49 (0) 63 43 / 23 12</a>⎪✉️  <a href=\"mailto:post@weingut-ullrich.de\" target=\"_blank\" title=\"mailto:post@weingut-ullrich.de\">post@weingut-ullrich.de<br/></a></p>",
+            "richtext_mobile": ""
+          }
+        },
+        "toolbar-0": {
+          "type": "announcement",
+          "settings": {
+            "richtext": "<p>🚛 Kostenfreier Versand ab 36 Flaschen</p>",
+            "richtext_mobile": "<p>🚛 Kostenfreier Versand ab 36 Flaschen</p>"
+          }
+        }
+      },
+      "block_order": [
+        "827db180-18a9-4be2-9de9-ad668355d00e",
+        "announcement_BiQdtg",
+        "toolbar-0"
+      ],
+      "settings": {
+        "announcement_center": true,
+        "toolbar_social": true,
+        "show_locale_selector": false,
+        "show_currency_selector": true,
+        "show_currency_flags": true
+      }
+    },
+    "header": {
+      "type": "header",
+      "blocks": {
+        "0e8356f3-3746-446e-88c7-6e95a9745d66": {
+          "type": "logo",
+          "settings": {
+            "logo": "shopify://shop_images/Vinum_Cantabile_Siegel.png",
+            "desktop_logo_width": 100,
+            "mobile_logo_width": 60
+          }
+        }
+      },
+      "block_order": [
+        "0e8356f3-3746-446e-88c7-6e95a9745d66"
+      ],
+      "settings": {
+        "main_menu_link_list": "main-menu",
+        "hover_menu": false,
+        "main_menu_alignment": "left",
+        "mega_products": false,
+        "header_sticky": true,
+        "header_footer_menu": true,
+        "sticky_index": false,
+        "sticky_collection": false
+      }
+    }
+  },
+  "order": [
+    "toolbar",
+    "header"
+  ]
+}
