@@ -12,19 +12,19 @@
     "slideshow-split": {
       "type": "slideshow-split",
       "blocks": {
-        "slide_6RNrJf": {
+        "0df4b508-1bb3-44cb-b219-073e645508a6": {
           "type": "slide",
           "settings": {
-            "top_subheading": "Secret Sale",
-            "title": "Seien Sie dabei!",
+            "top_subheading": "",
+            "title": "Schnell sein lohnt sich...",
             "title_size": 60,
-            "subheading": "Jetzt beim Secret Sale von besonderen Rabatten profitieren!",
-            "link": "shopify://products/adventspaket",
-            "link_text": "Zum Adventspaket 🎄",
+            "subheading": "Versüßen Sie sich die Weihnachtszeit mit unserem Adventspaket!",
+            "link": "shopify://collections/ausgezeichnet",
+            "link_text": "Zum Adventspaket 🎁",
             "link_2": "",
             "link_text_2": "",
             "text_position": "left",
-            "image": "shopify://shop_images/IMG_2400.webp",
+            "image": "shopify://shop_images/IMG_2371.webp",
             "indent_image": false,
             "color_scheme": "2"
           }
@@ -46,20 +46,20 @@
             "color_scheme": "2"
           }
         },
-        "0df4b508-1bb3-44cb-b219-073e645508a6": {
+        "slide_6RNrJf": {
           "type": "slide",
           "disabled": true,
           "settings": {
-            "top_subheading": "",
-            "title": "Schnell sein lohnt sich...",
+            "top_subheading": "Secret Sale",
+            "title": "Seien Sie dabei!",
             "title_size": 60,
-            "subheading": "Versüßen Sie sich die Weihnachtszeit mit unserem Adventspaket!",
-            "link": "shopify://collections/ausgezeichnet",
-            "link_text": "Zum Adventspaket 🎁",
+            "subheading": "Jetzt beim Secret Sale von besonderen Rabatten profitieren!",
+            "link": "shopify://products/adventspaket",
+            "link_text": "Zum Adventspaket 🎄",
             "link_2": "",
             "link_text_2": "",
             "text_position": "left",
-            "image": "shopify://shop_images/IMG_2371.webp",
+            "image": "shopify://shop_images/IMG_2400.webp",
             "indent_image": false,
             "color_scheme": "2"
           }
@@ -102,9 +102,9 @@
         }
       },
       "block_order": [
-        "slide_6RNrJf",
-        "slideshow-split-0",
         "0df4b508-1bb3-44cb-b219-073e645508a6",
+        "slideshow-split-0",
+        "slide_6RNrJf",
         "slide_CffWig",
         "slide_7zpd4d"
       ],
