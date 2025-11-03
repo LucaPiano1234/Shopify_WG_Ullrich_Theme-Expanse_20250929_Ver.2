@@ -84,18 +84,17 @@
         },
         "slide_7zpd4d": {
           "type": "slide",
-          "disabled": true,
           "settings": {
             "top_subheading": "",
-            "title": "Preisgekrönte Bio-Weine",
+            "title": "Endlich wieder da!",
             "title_size": 60,
-            "subheading": "Entdecken Sie unsere prämierten Weine.",
+            "subheading": "Entdecken Sie unsere preisgekrönten Bio-Weine.",
             "link": "shopify://collections/ausgezeichnet",
             "link_text": "Zu den prämierten Weinen! 🥇",
             "link_2": "",
             "link_text_2": "",
             "text_position": "left",
-            "image": "shopify://shop_images/240707_Shopbanner_Banner_Shop_WG_Ullrich.webp",
+            "image": "shopify://shop_images/240707_Shopbanner_Banner_Shop_WG_Ullrich_6019678e-d38b-4e4e-8e75-815e7a4cce6f.webp",
             "indent_image": false,
             "color_scheme": "2"
           }
