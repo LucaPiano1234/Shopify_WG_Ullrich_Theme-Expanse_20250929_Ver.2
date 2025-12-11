@@ -16,21 +16,22 @@
           "type": "slide",
           "settings": {
             "top_subheading": "",
-            "title": "Schnell sein lohnt sich...",
+            "title": "Biologisch, nachhaltig, authentisch",
             "title_size": 60,
-            "subheading": "Versüßen Sie sich die Weihnachtszeit mit unserem Adventspaket!",
-            "link": "shopify://products/adventspaket",
-            "link_text": "Zum Adventspaket 🎁",
+            "subheading": "Entdecken Sie die Vielfalt unseres Bio-Weinguts",
+            "link": "shopify://products/kennenlernpakete",
+            "link_text": "Zu den Kennenlernpaketen",
             "link_2": "",
             "link_text_2": "",
             "text_position": "left",
-            "image": "shopify://shop_images/IMG_2371.webp",
+            "image": "shopify://shop_images/IMG_2368.jpg",
             "indent_image": false,
             "color_scheme": "2"
           }
         },
         "slideshow-split-0": {
           "type": "slide",
+          "disabled": true,
           "settings": {
             "top_subheading": "Unsere Herbstweine",
             "title": "Bereit für die gemütliche Jahreszeit?",
@@ -66,24 +67,24 @@
         },
         "slide_CffWig": {
           "type": "slide",
-          "disabled": true,
           "settings": {
             "top_subheading": "",
-            "title": "Mit oder ohne? Warum nicht beides?",
-            "title_size": 60,
-            "subheading": "Unsere beliebten alkoholfreien Weine treffen auf unsere ausgezeichneten klassischen Weine.",
-            "link": "shopify://products/halbtrockenes-paket",
-            "link_text": "Halbtrockenes Paket bestellen",
+            "title": "Kaminfeuer, Winternacht, perfekter Wein",
+            "title_size": 53,
+            "subheading": "Ob beim gemütlichen Abend zu zweit, beim Dinner mit Freunden oder einfach zum Entspannen nach einem langen Wintertag.",
+            "link": "shopify://products/kaminpaket",
+            "link_text": "Kaminpaket bestellen",
             "link_2": "",
             "link_text_2": "",
             "text_position": "left",
-            "image": "shopify://shop_images/WG_Ullrich_Banner_CRO_Halbtrockenes_Januar.webp",
+            "image": "shopify://shop_images/Kaminpaket.jpg",
             "indent_image": false,
             "color_scheme": "2"
           }
         },
         "slide_7zpd4d": {
           "type": "slide",
+          "disabled": true,
           "settings": {
             "top_subheading": "",
             "title": "Endlich wieder da!",
